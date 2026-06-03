@@ -1,0 +1,45 @@
+{
+  "debugLogging": false,
+  "gestures": {
+    "triggers": [
+      {
+        "id": "example-two-finger-tap",
+        "type": "twoFingerTap",
+        "tap": {
+          "name": "Example Two Finger Tap",
+          "isEnabled": false,
+          "fingerCount": 2,
+          "tapCount": 1,
+          "maximumTapMilliseconds": 300,
+          "doubleTapMaximumIntervalMilliseconds": 350,
+          "maximumMovement": 0.07,
+          "pressKind": "touch",
+          "minimumPressure": 0.0,
+          "sustainingPressure": 0.0,
+          "minimumForceMilliseconds": 45,
+          "cooldownMilliseconds": 650,
+          "actions": [
+            {
+              "type": "testHUD",
+              "name": "Show Example HUD",
+              "title": "GlissPad",
+              "detail": "Example trigger fired."
+            },
+            {
+              "type": "latency",
+              "name": "Wait 500 ms",
+              "durationMilliseconds": 500
+            },
+            {
+              "type": "script",
+              "name": "Print Example Message",
+              "language": "shell",
+              "script": "echo \"GlissPad example action\"",
+              "timeoutSeconds": 5
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
