@@ -7,20 +7,14 @@ protocol KeyboardShortcutRunning: Sendable {
 }
 
 public final class KeyboardShortcutRunner: KeyboardShortcutRunning, Sendable {
-    private let keyHoldDuration: TimeInterval
     private let keyEventSpacing: TimeInterval
-    private let dispatchDelay: TimeInterval
     private let scriptTimeout: TimeInterval
 
     public init(
-        keyHoldDuration: TimeInterval = 0.08,
         keyEventSpacing: TimeInterval = 0.01,
-        dispatchDelay: TimeInterval = 0.12,
         scriptTimeout: TimeInterval = 2
     ) {
-        self.keyHoldDuration = keyHoldDuration
         self.keyEventSpacing = keyEventSpacing
-        self.dispatchDelay = dispatchDelay
         self.scriptTimeout = scriptTimeout
     }
 
@@ -30,32 +24,36 @@ public final class KeyboardShortcutRunner: KeyboardShortcutRunning, Sendable {
         }
         try action.validate(name: "keyboardShortcutAction")
         let keys = orderedKeys(for: action)
-        Thread.sleep(forTimeInterval: dispatchDelay)
 
         if let script = KeyboardShortcutAppleScript.script(for: keys) {
             try runSystemEvents(script)
         }
-        try runCGEvents(keys)
+        try runCGEvents(keys, keyHoldDuration: seconds(action.keyHoldMilliseconds))
+        sleep(milliseconds: action.postReleaseDelayMilliseconds)
     }
 
-    private func runCGEvents(_ keys: [KeyboardKey]) throws {
+    private func runCGEvents(_ keys: [KeyboardKey], keyHoldDuration: TimeInterval) throws {
         guard let source = CGEventSource(stateID: .hidSystemState) else {
             throw KeyboardShortcutRunnerError.eventSourceCreationFailed
         }
         source.localEventsSuppressionInterval = 0
 
         var activeFlags: CGEventFlags = []
-        for key in keys {
+        for (index, key) in keys.enumerated() {
             activeFlags.formUnion(key.modifierFlag)
             try post(key: key, keyDown: true, flags: activeFlags, source: source)
-            Thread.sleep(forTimeInterval: keyEventSpacing)
+            if index < keys.count - 1 {
+                Thread.sleep(forTimeInterval: keyEventSpacing)
+            }
         }
         Thread.sleep(forTimeInterval: keyHoldDuration)
-        for key in keys.reversed() {
+        for (index, key) in keys.reversed().enumerated() {
             let flags = activeFlags.subtracting(key.modifierFlag)
             try post(key: key, keyDown: false, flags: flags, source: source)
             activeFlags = flags
-            Thread.sleep(forTimeInterval: keyEventSpacing)
+            if index < keys.count - 1 {
+                Thread.sleep(forTimeInterval: keyEventSpacing)
+            }
         }
     }
 
@@ -112,6 +110,15 @@ public final class KeyboardShortcutRunner: KeyboardShortcutRunning, Sendable {
     }
 
     private static let keyboardTypeANSI: Int64 = 40
+
+    private func seconds(_ milliseconds: Int) -> TimeInterval {
+        TimeInterval(milliseconds) / 1_000
+    }
+
+    private func sleep(milliseconds: Int) {
+        guard milliseconds > 0 else { return }
+        Thread.sleep(forTimeInterval: seconds(milliseconds))
+    }
 
     private func frontmostProcessID() -> pid_t? {
         NSWorkspace.shared.frontmostApplication?.processIdentifier

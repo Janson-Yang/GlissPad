@@ -102,6 +102,8 @@ final class GestureEditorWindowController: NSWindowController, NSWindowDelegate 
     let keyboardModePopup = NSPopUpButton()
     let primaryKeyField = KeyCaptureField()
     let secondaryKeyField = KeyCaptureField()
+    let keyboardHoldMillisecondsField = FormFactory.textField(width: 90)
+    let keyboardPostReleaseDelayField = FormFactory.textField(width: 90)
     let scriptTextView = NSTextView()
 
     init(store: ConfigurationStore, logger: Logger) {

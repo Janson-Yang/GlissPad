@@ -32,7 +32,9 @@ extension GestureEditorWindowController {
             name: try nonEmptyString(actionNameField, name: "action name"),
             mode: mode,
             primaryKey: primaryKey,
-            secondaryKey: secondaryKey
+            secondaryKey: secondaryKey,
+            keyHoldMilliseconds: try keyHoldMilliseconds(),
+            postReleaseDelayMilliseconds: try postReleaseDelayMilliseconds()
         ))
     }
 
@@ -42,6 +44,8 @@ extension GestureEditorWindowController {
         let secondaryKey = action.secondaryKey ?? .command
         secondaryKeyField.capturedKey = secondaryKey
         secondaryKeyField.isEnabled = action.mode == .keyCombination
+        keyboardHoldMillisecondsField.stringValue = "\(action.keyHoldMilliseconds)"
+        keyboardPostReleaseDelayField.stringValue = "\(action.postReleaseDelayMilliseconds)"
     }
 
     func visibleTestHUDAction() throws -> GestureAction {
@@ -70,5 +74,31 @@ extension GestureEditorWindowController {
             throw GUIValidationError.invalidField(name)
         }
         return key
+    }
+
+    private func keyHoldMilliseconds() throws -> Int {
+        try keyboardTimingValue(
+            keyboardHoldMillisecondsField,
+            name: "key hold milliseconds",
+            range: KeyboardShortcutAction.keyHoldMillisecondsRange
+        )
+    }
+
+    private func postReleaseDelayMilliseconds() throws -> Int {
+        try keyboardTimingValue(
+            keyboardPostReleaseDelayField,
+            name: "after key up milliseconds",
+            range: KeyboardShortcutAction.postReleaseDelayMillisecondsRange
+        )
+    }
+
+    private func keyboardTimingValue(
+        _ field: NSTextField,
+        name: String,
+        range: ClosedRange<Int>
+    ) throws -> Int {
+        let value = try intValue(field, name: name)
+        guard range.contains(value) else { throw GUIValidationError.invalidField(name) }
+        return value
     }
 }

@@ -92,6 +92,8 @@ extension GestureEditorWindowController {
             field.action = #selector(configurationControlChanged(_:))
             field.widthAnchor.constraint(greaterThanOrEqualToConstant: 180).isActive = true
         }
+        keyboardHoldMillisecondsField.placeholderString = "\(KeyboardShortcutAction.defaultKeyHoldMilliseconds)"
+        keyboardPostReleaseDelayField.placeholderString = "\(KeyboardShortcutAction.defaultPostReleaseDelayMilliseconds)"
     }
 
     func makeScriptEditor() -> NSView {

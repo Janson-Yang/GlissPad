@@ -15,6 +15,8 @@ public enum GestureAction: Codable, Equatable, Sendable {
         case mode
         case primaryKey
         case secondaryKey
+        case keyHoldMilliseconds
+        case postReleaseDelayMilliseconds
         case title
         case detail
         case durationMilliseconds
@@ -155,6 +157,8 @@ public enum GestureAction: Codable, Equatable, Sendable {
         try container.encode(action.mode, forKey: .mode)
         try container.encode(action.primaryKey, forKey: .primaryKey)
         try container.encodeIfPresent(action.secondaryKey, forKey: .secondaryKey)
+        try container.encode(action.keyHoldMilliseconds, forKey: .keyHoldMilliseconds)
+        try container.encode(action.postReleaseDelayMilliseconds, forKey: .postReleaseDelayMilliseconds)
     }
 
     private func encodeTestHUD(_ action: TestHUDAction, to encoder: Encoder) throws {

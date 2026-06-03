@@ -26,7 +26,9 @@ extension GestureEditorWindowController: NSTextFieldDelegate, NSTextViewDelegate
             pathToleranceField,
             holdDurationField,
             holdMovementField,
-            releaseToleranceField
+            releaseToleranceField,
+            keyboardHoldMillisecondsField,
+            keyboardPostReleaseDelayField
         ].forEach(configureAutoSavingField)
         [
             regionFields.minX,

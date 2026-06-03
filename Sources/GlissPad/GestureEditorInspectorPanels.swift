@@ -88,6 +88,8 @@ extension GestureEditorWindowController {
             FormFactory.row("Mode", keyboardModePopup),
             FormFactory.row("Primary key", primaryKeyField),
             FormFactory.row("Second key", secondaryKeyField),
+            FormFactory.row("Key hold ms", keyboardHoldMillisecondsField),
+            FormFactory.row("After key up ms", keyboardPostReleaseDelayField),
             inspectorButtonRow(deleteActionButton())
         ])
     }

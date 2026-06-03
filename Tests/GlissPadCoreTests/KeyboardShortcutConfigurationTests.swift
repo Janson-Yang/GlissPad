@@ -41,6 +41,11 @@ final class KeyboardShortcutConfigurationTests: XCTestCase {
         XCTAssertEqual(action.mode, .keyCombination)
         XCTAssertEqual(action.primaryKey.keyCode, 55)
         XCTAssertEqual(action.secondaryKey?.keyCode, 0)
+        XCTAssertEqual(action.keyHoldMilliseconds, KeyboardShortcutAction.defaultKeyHoldMilliseconds)
+        XCTAssertEqual(
+            action.postReleaseDelayMilliseconds,
+            KeyboardShortcutAction.defaultPostReleaseDelayMilliseconds
+        )
     }
 
     func testConfigurationDecodesCapturedKeyCodes() throws {
@@ -81,6 +86,22 @@ final class KeyboardShortcutConfigurationTests: XCTestCase {
         XCTAssertEqual(action.secondaryKey, KeyboardKey(keyCode: 122, displayName: "F1"))
     }
 
+    func testKeyboardShortcutTimingRoundTripsThroughGestureAction() throws {
+        let action = GestureAction.keyboardShortcut(KeyboardShortcutAction(
+            name: "Double Command Tap",
+            mode: .singleKey,
+            primaryKey: .leftCommand,
+            keyHoldMilliseconds: 40,
+            postReleaseDelayMilliseconds: 180
+        ))
+
+        let data = try JSONEncoder().encode(action)
+        let decoded = try JSONDecoder().decode(GestureAction.self, from: data)
+
+        XCTAssertEqual(decoded.keyboardShortcutAction?.keyHoldMilliseconds, 40)
+        XCTAssertEqual(decoded.keyboardShortcutAction?.postReleaseDelayMilliseconds, 180)
+    }
+
     func testKeyboardShortcutCombinationRequiresSecondKey() {
         let action = KeyboardShortcutAction(
             name: "Broken Shortcut",
@@ -100,6 +121,24 @@ final class KeyboardShortcutConfigurationTests: XCTestCase {
         )
 
         XCTAssertThrowsError(try action.validate(name: "action"))
+    }
+
+    func testKeyboardShortcutRejectsInvalidTiming() {
+        let invalidHold = KeyboardShortcutAction(
+            name: "Broken Hold",
+            mode: .singleKey,
+            primaryKey: .command,
+            keyHoldMilliseconds: 0
+        )
+        let invalidDelay = KeyboardShortcutAction(
+            name: "Broken Delay",
+            mode: .singleKey,
+            primaryKey: .command,
+            postReleaseDelayMilliseconds: -1
+        )
+
+        XCTAssertThrowsError(try invalidHold.validate(name: "action"))
+        XCTAssertThrowsError(try invalidDelay.validate(name: "action"))
     }
 
     func testAppleScriptUsesCapturedFunctionKeyCode() {
