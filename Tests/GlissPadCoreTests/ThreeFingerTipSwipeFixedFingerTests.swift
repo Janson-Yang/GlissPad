@@ -2,6 +2,29 @@
 import XCTest
 
 final class ThreeFingerTipSwipeFixedFingerTests: XCTestCase {
+    func testTipSwipeInfersSlidingFingerWhenAllTouchesStartTogether() {
+        var rule = threeFingerRule()
+        rule.tipSwipe = ThreeFingerTipSwipeOptions(direction: .up, minimumVelocity: 0.3)
+        let recognizer = recognizer(rule)
+
+        XCTAssertTrue(recognizer.process(frame(touches: threeTouches(activeY: 0.55), time: 1.0)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: threeTouches(activeY: 0.55), time: 1.2)).isEmpty)
+        let gestures = recognizer.process(frame(touches: threeTouches(activeY: 0.35), time: 1.3))
+
+        XCTAssertEqual(gestures.map(\.kind), [.threeFingerTipSwipe])
+    }
+
+    func testTipSwipeDoesNotTreatWholeHandSwipeAsTipSwipe() {
+        var rule = threeFingerRule()
+        rule.tipSwipe = ThreeFingerTipSwipeOptions(direction: .up, minimumVelocity: 0.3)
+        let recognizer = recognizer(rule)
+
+        XCTAssertTrue(recognizer.process(frame(touches: threeTouches(activeY: 0.55), time: 1.0)).isEmpty)
+        let gestures = recognizer.process(frame(touches: threeTouches(y: 0.35), time: 1.3))
+
+        XCTAssertTrue(gestures.isEmpty)
+    }
+
     func testTipSwipeCanUseOneFixedFingerAndRightSlidingFinger() {
         var rule = threeFingerRule()
         rule.tipSwipe = ThreeFingerTipSwipeOptions(
@@ -43,6 +66,14 @@ final class ThreeFingerTipSwipeFixedFingerTests: XCTestCase {
 
     private func twoTouches(activeY: Double) -> [TouchPoint] {
         [touch(id: 1, x: 0.35), touch(id: 2, x: 0.65, y: activeY)]
+    }
+
+    private func threeTouches(activeY: Double) -> [TouchPoint] {
+        [touch(id: 1, x: 0.25), touch(id: 2, x: 0.5), touch(id: 3, x: 0.75, y: activeY)]
+    }
+
+    private func threeTouches(y: Double) -> [TouchPoint] {
+        [touch(id: 1, x: 0.25, y: y), touch(id: 2, x: 0.5, y: y), touch(id: 3, x: 0.75, y: y)]
     }
 
     private func frame(touches: [TouchPoint], time: TimeInterval) -> TouchFrame {

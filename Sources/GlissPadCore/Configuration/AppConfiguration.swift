@@ -81,6 +81,8 @@ public struct AppConfiguration: Codable, Equatable, Sendable {
         case .threeFinger(let id, let type, var rule):
             if type == .threeFingerTouch {
                 rule = migrateThreeFingerTouchTolerance(rule)
+            } else if type == .threeFingerTipSwipe {
+                rule = migrateThreeFingerTipSwipeVelocity(rule)
             }
             return .threeFinger(id: id, type: type, rule: rule)
         case .oneFinger, .circle, .shape, .tap, .customPath, .touchStart, .tipTap, .swipe,
@@ -152,6 +154,13 @@ public struct AppConfiguration: Codable, Equatable, Sendable {
         guard isLegacyValue(rule.touch.movementTolerance, in: [0.04]) else { return rule }
         var rule = rule
         rule.touch.movementTolerance = 0.08
+        return rule
+    }
+
+    private func migrateThreeFingerTipSwipeVelocity(_ rule: ThreeFingerGestureRule) -> ThreeFingerGestureRule {
+        guard isLegacyValue(rule.tipSwipe.minimumVelocity, in: [0.75]) else { return rule }
+        var rule = rule
+        rule.tipSwipe.minimumVelocity = 0.35
         return rule
     }
 

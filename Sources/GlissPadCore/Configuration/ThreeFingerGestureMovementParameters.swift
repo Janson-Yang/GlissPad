@@ -97,7 +97,7 @@ public struct ThreeFingerTipSwipeOptions: Codable, Equatable, Sendable {
         activeFingerReference: ThreeFingerFingerReference = .trackpad,
         direction: ThreeFingerDirection = .up,
         minimumTravel: Double = 0.12,
-        minimumVelocity: Double = 0.75,
+        minimumVelocity: Double = 0.35,
         directionToleranceDegrees: Double = 35,
         maximumFixedFingerMovement: Double = 0.04,
         minimumFixedFingerHoldMilliseconds: Int = 50,

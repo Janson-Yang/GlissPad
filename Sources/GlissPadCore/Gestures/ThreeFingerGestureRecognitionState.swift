@@ -95,6 +95,11 @@ struct ThreeFingerTipState: Equatable {
     var triggered = false
 }
 
+struct ThreeFingerTipCandidateState: Equatable {
+    var anchors: [Int: NormalizedPoint]
+    var startedAt: TimeInterval
+}
+
 struct ThreeFingerPendingTap: Equatable {
     var count: Int
     var timestamp: TimeInterval
@@ -107,6 +112,7 @@ enum ThreeFingerRecognitionPhase: Equatable {
     case tracking(ThreeFingerTrackingState)
     case releasing(ThreeFingerTrackingState)
     case tipBase(ThreeFingerTipBase)
+    case tipCandidate(ThreeFingerTipCandidateState)
     case tip(ThreeFingerTipState)
     case cancellingUntilRelease
 }

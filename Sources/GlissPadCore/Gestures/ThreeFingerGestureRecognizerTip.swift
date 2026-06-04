@@ -20,9 +20,11 @@ extension ThreeFingerGestureRecognizer {
     func processTipSwipe(_ frame: TouchFrame) -> RecognizedGesture? {
         switch phase {
         case .idle:
-            startTipBaseIfPossible(frame, swipe: true)
+            startTipSwipeIfPossible(frame)
         case .tipBase(let base):
             return updateTipBase(frame, base: base, swipe: true)
+        case .tipCandidate(let candidate):
+            return updateTipSwipeCandidate(frame, candidate: candidate)
         case .tip(var state):
             return updateTipSwipe(frame, state: &state)
         case .cancellingUntilRelease:
@@ -31,6 +33,19 @@ extension ThreeFingerGestureRecognizer {
             phase = .idle
         }
         return nil
+    }
+
+    private func startTipSwipeIfPossible(_ frame: TouchFrame) {
+        let active = frame.activeTouches
+        let fixedFingers = rule.tipSwipe.fixedFingers
+        if active.count == fixedFingers {
+            startTipBaseIfPossible(frame, swipe: true)
+        } else if active.count == fixedFingers + 1, regionContains(rule.common.region, touches: active) {
+            phase = .tipCandidate(ThreeFingerTipCandidateState(
+                anchors: Dictionary(uniqueKeysWithValues: active.map { ($0.id, $0.position) }),
+                startedAt: frame.timestamp
+            ))
+        }
     }
 
     private func startTipBaseIfPossible(_ frame: TouchFrame, swipe: Bool) {
@@ -78,6 +93,24 @@ extension ThreeFingerGestureRecognizer {
             startedAt: frame.timestamp
         ))
         return nil
+    }
+
+    private func updateTipSwipeCandidate(
+        _ frame: TouchFrame,
+        candidate: ThreeFingerTipCandidateState
+    ) -> RecognizedGesture? {
+        let active = frame.activeTouches
+        if active.isEmpty {
+            phase = .idle
+            return nil
+        }
+        guard active.count == candidate.anchors.count,
+              let state = promotedTipSwipeCandidate(candidate, touches: active, frame: frame) else {
+            phase = active.count == candidate.anchors.count ? .tipCandidate(candidate) : .cancellingUntilRelease
+            return nil
+        }
+        var nextState = state
+        return updateTipSwipe(frame, state: &nextState)
     }
 
     private func updateTipTap(_ frame: TouchFrame, state: ThreeFingerTipState) -> RecognizedGesture? {
@@ -142,6 +175,50 @@ extension ThreeFingerGestureRecognizer {
         }
         state.completed = state.completed || tipSwipeCompleted(frame: frame, state: state, tip: tip)
         return triggerTipSwipeIfNeeded(frame, state: &state)
+    }
+
+    private func promotedTipSwipeCandidate(
+        _ candidate: ThreeFingerTipCandidateState,
+        touches: [TouchPoint],
+        frame: TouchFrame
+    ) -> ThreeFingerTipState? {
+        let movements = tipCandidateMovements(candidate, touches: touches)
+        guard let activeMovement = movements.first,
+              activeMovement.distance >= tipSwipeMovementStartDistance else { return nil }
+        let fixedMovements = movements.dropFirst()
+        guard fixedMovements.count == rule.tipSwipe.fixedFingers,
+              fixedMovements.allSatisfy({ $0.distance <= rule.tipSwipe.maximumFixedFingerMovement }),
+              activeFingerAllowed(activeMovement.touch, touches: touches, swipe: true) else {
+            return nil
+        }
+        let base = ThreeFingerTipBase(
+            anchors: Dictionary(uniqueKeysWithValues: fixedMovements.map { ($0.touch.id, $0.anchor) }),
+            startedAt: candidate.startedAt
+        )
+        return ThreeFingerTipState(
+            base: base,
+            activeID: activeMovement.touch.id,
+            activeAnchor: activeMovement.anchor,
+            startedAt: frame.timestamp
+        )
+    }
+
+    private func tipCandidateMovements(
+        _ candidate: ThreeFingerTipCandidateState,
+        touches: [TouchPoint]
+    ) -> [(touch: TouchPoint, anchor: NormalizedPoint, distance: Double)] {
+        touches.compactMap { touch in
+            guard let anchor = candidate.anchors[touch.id] else { return nil }
+            return (touch, anchor, touch.position.distance(to: anchor))
+        }
+        .sorted { first, second in
+            if first.distance == second.distance { return first.touch.id < second.touch.id }
+            return first.distance > second.distance
+        }
+    }
+
+    private var tipSwipeMovementStartDistance: Double {
+        min(rule.tipSwipe.minimumTravel * 0.5, max(0.015, rule.tipSwipe.maximumFixedFingerMovement * 0.5))
     }
 
     private func fixedTouchesAreStable(_ active: [TouchPoint], base: ThreeFingerTipBase, swipe: Bool) -> Bool {
