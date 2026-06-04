@@ -7,6 +7,8 @@ extension ThreeFingerGestureRecognizer {
             startTrackingIfPossible(frame, region: rule.common.startRegion ?? rule.common.region)
         case .tracking(var state):
             return updateDrawingTracking(frame, state: &state)
+        case .releasing(var state):
+            return updateDrawingRelease(frame, state: &state)
         case .cancellingUntilRelease:
             resetIfReleased(frame)
         default:
@@ -20,26 +22,86 @@ extension ThreeFingerGestureRecognizer {
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
         let active = frame.activeTouches
-        guard !active.isEmpty else { return finishDrawing(frame, state: state) }
+        if active.count < 3 { return finishDrawingDuringRelease(frame, state: &state) }
         guard active.count == 3 else {
             phase = .cancellingUntilRelease
             return nil
         }
-        state.appendSample(from: active)
+        guard let sample = drawingSample(from: active, state: state) else {
+            phase = .cancellingUntilRelease
+            return nil
+        }
+        state.appendSample(sample, touches: active)
         phase = .tracking(state)
         return nil
     }
 
-    func finishDrawing(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> RecognizedGesture? {
-        phase = .idle
-        guard frame.timestamp - state.startedAt <= TimeInterval(rule.drawing.maximumDurationMilliseconds) / 1000,
-              pathLength(state.samples) >= rule.drawing.minimumPathLength,
-              regionContains(rule.common.endRegion, touches: state.lastTouches),
-              drawingTemplateMatches(state.samples),
-              canTrigger(at: frame.timestamp) else {
-            return nil
+    private func drawingSample(
+        from touches: [TouchPoint],
+        state: ThreeFingerTrackingState
+    ) -> NormalizedPoint? {
+        switch rule.drawing.pathSource {
+        case .centroid:
+            return NormalizedPoint.centroid(of: touches)
+        case .allFingersAverage:
+            return averageTrackedFingerMovement(touches, state: state)
         }
+    }
+
+    private func averageTrackedFingerMovement(
+        _ touches: [TouchPoint],
+        state: ThreeFingerTrackingState
+    ) -> NormalizedPoint? {
+        let deltas = touches.compactMap { touch -> (dx: Double, dy: Double)? in
+            guard let anchor = state.anchors[touch.id] else { return nil }
+            return (dx: touch.position.x - anchor.x, dy: touch.position.y - anchor.y)
+        }
+        guard !deltas.isEmpty, let origin = state.centroidAnchor else {
+            return NormalizedPoint.centroid(of: touches)
+        }
+        let count = Double(deltas.count)
+        let dx = deltas.map(\.dx).reduce(0, +) / count
+        let dy = deltas.map(\.dy).reduce(0, +) / count
+        return NormalizedPoint(x: origin.x + dx, y: origin.y + dy)
+    }
+
+    private func updateDrawingRelease(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        guard frame.activeTouches.count != 3 else {
+            return updateDrawingTracking(frame, state: &state)
+        }
+        return finishDrawingDuringRelease(frame, state: &state)
+    }
+
+    private func finishDrawingDuringRelease(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        let gesture = finishDrawing(frame, state: &state)
+        phase = frame.activeTouches.isEmpty ? .idle : .releasing(state)
+        return gesture
+    }
+
+    func finishDrawing(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> RecognizedGesture? {
+        var state = state
+        return finishDrawing(frame, state: &state)
+    }
+
+    private func finishDrawing(_ frame: TouchFrame, state: inout ThreeFingerTrackingState) -> RecognizedGesture? {
+        guard !state.triggered else { return nil }
+        guard drawingCompleted(frame: frame, state: state),
+              canTrigger(at: frame.timestamp) else { return nil }
+        state.triggered = true
         return recognizedGesture(frame)
+    }
+
+    private func drawingCompleted(frame: TouchFrame, state: ThreeFingerTrackingState) -> Bool {
+        return frame.timestamp - state.startedAt <= TimeInterval(rule.drawing.maximumDurationMilliseconds) / 1000
+            && pathLength(state.samples) >= rule.drawing.minimumPathLength
+            && regionContains(rule.common.endRegion, touches: state.lastTouches)
+            && drawingTemplateMatches(state.samples)
     }
 
     private func drawingTemplateMatches(_ samples: [NormalizedPoint]) -> Bool {

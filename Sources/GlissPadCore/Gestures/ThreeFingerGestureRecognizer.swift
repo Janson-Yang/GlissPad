@@ -125,10 +125,9 @@ final class ThreeFingerGestureRecognizer {
     var stableFingerDuration: TimeInterval { TimeInterval(rule.common.minStableFingerCountDurationMilliseconds) / 1000 }
 
     private var effectiveCommonTimeGap: TimeInterval {
-        if type == .threeFingerTouch, rule.touch.event == .longTouch {
-            return max(commonTimeGap, 0.35)
-        }
-        return commonTimeGap
+        let needsRelaxedCollection = type == .threeFingerDrawing
+            || (type == .threeFingerTouch && rule.touch.event == .longTouch)
+        return needsRelaxedCollection ? max(commonTimeGap, 0.35) : commonTimeGap
     }
 
     private var isLongTouch: Bool {

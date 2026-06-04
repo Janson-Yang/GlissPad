@@ -28,6 +28,7 @@ extension GestureTriggerType {
         case .thumbTwoFingerScale:
             rule.scale = ThreeFingerScaleOptions(direction: .spreadOut)
         case .threeFingerDrawing:
+            rule.common.maxInitialFingerTimeGapMilliseconds = 350
             rule.drawing = ThreeFingerDrawingOptions()
         default:
             break

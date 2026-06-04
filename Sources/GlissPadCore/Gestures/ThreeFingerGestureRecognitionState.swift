@@ -30,8 +30,12 @@ struct ThreeFingerTrackingState: Equatable {
 
     mutating func appendSample(from touches: [TouchPoint]) {
         guard let centroid = NormalizedPoint.centroid(of: touches) else { return }
-        if samples.last?.distance(to: centroid) ?? .infinity >= 0.004 {
-            samples.append(centroid)
+        appendSample(centroid, touches: touches)
+    }
+
+    mutating func appendSample(_ point: NormalizedPoint, touches: [TouchPoint]) {
+        if samples.last?.distance(to: point) ?? .infinity >= 0.004 {
+            samples.append(point)
         }
         lastTouches = touches
         maximumObservedPressure = max(maximumObservedPressure, touches.maximumPressure())
