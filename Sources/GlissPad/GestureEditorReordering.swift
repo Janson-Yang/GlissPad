@@ -49,10 +49,11 @@ extension GestureEditorWindowController {
             actionReorderState = ListReorderState(sourceIndex: index, targetIndex: index)
             selectedAction = ActionSlot(index: index)
             inspectorMode = .action
-            setActionSeparatorsHidden(true)
+            setActionReorderLayoutActive(true)
             refreshSelectionVisuals()
             return true
         } catch {
+            setActionReorderLayoutActive(false)
             statusLabel.stringValue = "Reorder action failed: \(error)"
             return false
         }
@@ -71,13 +72,14 @@ extension GestureEditorWindowController {
         guard let state = actionReorderState else { return }
         actionReorderState = nil
         do {
-            setActionSeparatorsHidden(false)
+            setActionReorderLayoutActive(false)
             applyActionReorder(state)
             try saveCurrentConfiguration(restartActiveListener: true)
             rebuildActionList()
             loadSelectedRule()
             statusLabel.stringValue = "Reordered actions."
         } catch {
+            setActionReorderLayoutActive(false)
             statusLabel.stringValue = "Reorder action failed: \(error)"
         }
     }
@@ -154,5 +156,11 @@ extension GestureEditorWindowController {
         actionListStack.arrangedSubviews
             .compactMap { $0 as? ActionOrderSeparatorView }
             .forEach { $0.isHidden = isHidden }
+    }
+
+    private func setActionReorderLayoutActive(_ isActive: Bool) {
+        actionListStack.spacing = isActive ? 12 : 0
+        setActionSeparatorsHidden(isActive)
+        actionScrollView?.scheduleContentSizeRefresh()
     }
 }
