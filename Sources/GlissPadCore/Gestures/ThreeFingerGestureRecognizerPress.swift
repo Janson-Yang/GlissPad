@@ -7,6 +7,8 @@ extension ThreeFingerGestureRecognizer {
             startTrackingIfPossible(frame, region: rule.common.region)
         case .tracking(var state):
             return updatePressTracking(frame, state: &state)
+        case .releasing(var state):
+            return updatePressRelease(frame, state: &state)
         case .cancellingUntilRelease:
             resetIfReleased(frame)
         default:
@@ -20,7 +22,7 @@ extension ThreeFingerGestureRecognizer {
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
         let active = frame.activeTouches
-        guard !active.isEmpty else { return finishPressOnRelease(frame, state: state) }
+        if active.count < 3 { return beginPressRelease(frame, state: &state) }
         guard active.count == 3 else {
             phase = .cancellingUntilRelease
             return nil
@@ -41,14 +43,39 @@ extension ThreeFingerGestureRecognizer {
         return nil
     }
 
-    private func finishPressOnRelease(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> RecognizedGesture? {
+    private func beginPressRelease(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        let gesture = finishPressOnRelease(frame, state: &state)
+        phase = frame.activeTouches.isEmpty ? .idle : .releasing(state)
+        return gesture
+    }
+
+    private func updatePressRelease(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        guard frame.activeTouches.isEmpty else {
+            phase = .releasing(state)
+            return nil
+        }
+        let gesture = finishPressOnRelease(frame, state: &state)
         phase = .idle
+        return gesture
+    }
+
+    private func finishPressOnRelease(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
         guard rule.press.triggerTiming == .pressUp,
               state.completed,
               !state.triggered,
               canTrigger(at: frame.timestamp) else {
             return nil
         }
+        state.triggered = true
         return recognizedGesture(frame)
     }
 
