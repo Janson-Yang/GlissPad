@@ -13,7 +13,7 @@ extension ThreeFingerGestureRecognizer {
             && distance / duration >= rule.tipSwipe.minimumVelocity
             && directionMatches(
                 dx: vector.dx,
-                dy: vector.dy,
+                dy: -vector.dy,
                 direction: rule.tipSwipe.direction,
                 toleranceDegrees: rule.tipSwipe.directionToleranceDegrees
             )

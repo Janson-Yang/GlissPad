@@ -9,6 +9,18 @@ final class ThreeFingerTipSwipeFixedFingerTests: XCTestCase {
 
         XCTAssertTrue(recognizer.process(frame(touches: threeTouches(activeY: 0.55), time: 1.0)).isEmpty)
         XCTAssertTrue(recognizer.process(frame(touches: threeTouches(activeY: 0.55), time: 1.2)).isEmpty)
+        let gestures = recognizer.process(frame(touches: threeTouches(activeY: 0.75), time: 1.3))
+
+        XCTAssertEqual(gestures.map(\.kind), [.threeFingerTipSwipe])
+    }
+
+    func testTipSwipeDownUsesOppositeVerticalDirection() {
+        var rule = threeFingerRule()
+        rule.tipSwipe = ThreeFingerTipSwipeOptions(direction: .down, minimumVelocity: 0.3)
+        let recognizer = recognizer(rule)
+
+        XCTAssertTrue(recognizer.process(frame(touches: threeTouches(activeY: 0.55), time: 1.0)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: threeTouches(activeY: 0.55), time: 1.2)).isEmpty)
         let gestures = recognizer.process(frame(touches: threeTouches(activeY: 0.35), time: 1.3))
 
         XCTAssertEqual(gestures.map(\.kind), [.threeFingerTipSwipe])
@@ -37,7 +49,7 @@ final class ThreeFingerTipSwipeFixedFingerTests: XCTestCase {
 
         XCTAssertTrue(recognizer.process(frame(touches: [touch(id: 1, x: 0.35)], time: 1.0)).isEmpty)
         XCTAssertTrue(recognizer.process(frame(touches: twoTouches(activeY: 0.55), time: 1.06)).isEmpty)
-        let gestures = recognizer.process(frame(touches: twoTouches(activeY: 0.35), time: 1.36))
+        let gestures = recognizer.process(frame(touches: twoTouches(activeY: 0.75), time: 1.36))
 
         XCTAssertEqual(gestures.map(\.kind), [.threeFingerTipSwipe])
     }

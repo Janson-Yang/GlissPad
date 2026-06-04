@@ -156,7 +156,7 @@ final class ThreeFingerGestureRecognizerTests: XCTestCase {
         XCTAssertTrue(recognizer.process(frame(touches: baseTouches(), time: 1.0)).isEmpty)
         XCTAssertTrue(recognizer.process(frame(touches: baseTouches(), time: 1.06)).isEmpty)
         XCTAssertTrue(recognizer.process(frame(touches: baseTouches() + [touch(id: 3, x: 0.7, y: 0.5)], time: 1.08)).isEmpty)
-        let gestures = recognizer.process(frame(touches: baseTouches() + [touch(id: 3, x: 0.7, y: 0.3)], time: 1.26))
+        let gestures = recognizer.process(frame(touches: baseTouches() + [touch(id: 3, x: 0.7, y: 0.7)], time: 1.26))
 
         XCTAssertEqual(gestures.map(\.kind), [.threeFingerTipSwipe])
     }
@@ -169,7 +169,7 @@ final class ThreeFingerGestureRecognizerTests: XCTestCase {
         XCTAssertTrue(recognizer.process(frame(touches: baseTouches(), time: 1.0)).isEmpty)
         XCTAssertTrue(recognizer.process(frame(touches: baseTouches(), time: 1.06)).isEmpty)
         XCTAssertTrue(recognizer.process(frame(touches: baseTouches() + [touch(id: 3, x: 0.7, y: 0.5)], time: 1.08)).isEmpty)
-        XCTAssertTrue(recognizer.process(frame(touches: baseTouches() + [touch(id: 3, x: 0.7, y: 0.3)], time: 1.26)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: baseTouches() + [touch(id: 3, x: 0.7, y: 0.7)], time: 1.26)).isEmpty)
         let gestures = recognizer.process(frame(touches: baseTouches(), time: 1.28))
 
         XCTAssertEqual(gestures.map(\.kind), [.threeFingerTipSwipe])
