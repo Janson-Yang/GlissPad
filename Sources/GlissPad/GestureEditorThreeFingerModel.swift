@@ -64,9 +64,9 @@ extension GestureEditorWindowController {
         threeFingerControls.swipeVelocityField.stringValue = "\(rule.swipe.minimumVelocity)"
         threeFingerControls.directionToleranceField.stringValue = "\(rule.swipe.directionToleranceDegrees)"
         select(threeFingerControls.tipTapPositionPopup, value: rule.tipTap.tapPosition)
-        select(threeFingerControls.tipTapReferencePopup, value: rule.tipTap.positionReference)
+        configureFingerReferencePopup(threeFingerControls.tipTapReferencePopup, selected: rule.tipTap.positionReference)
         select(threeFingerControls.tipSwipeActiveFingerPopup, value: rule.tipSwipe.activeFinger)
-        select(threeFingerControls.tipSwipeReferencePopup, value: rule.tipSwipe.activeFingerReference)
+        configureFingerReferencePopup(threeFingerControls.tipSwipeReferencePopup, selected: rule.tipSwipe.activeFingerReference)
         select(threeFingerControls.tipSwipeDirectionPopup, value: rule.tipSwipe.direction)
         select(threeFingerControls.tipSwipeTimingPopup, value: rule.tipSwipe.triggerTiming)
         select(threeFingerControls.scaleDirectionPopup, value: rule.scale.direction)

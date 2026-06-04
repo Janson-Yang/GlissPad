@@ -48,7 +48,7 @@ public struct ThreeFingerTipTapOptions: Codable, Equatable, Sendable {
     public init(
         fixedFingers: Int = 2,
         tapPosition: ThreeFingerPosition = .left,
-        positionReference: ThreeFingerFingerReference = .touchOrder,
+        positionReference: ThreeFingerFingerReference = .trackpad,
         tapCount: Int = 1,
         maximumTapMilliseconds: Int = 180,
         maximumActiveFingerMovement: Double = 0.05,
@@ -94,7 +94,7 @@ public struct ThreeFingerTipSwipeOptions: Codable, Equatable, Sendable {
     public init(
         fixedFingers: Int = 2,
         activeFinger: ThreeFingerActiveFinger = .auto,
-        activeFingerReference: ThreeFingerFingerReference = .touchOrder,
+        activeFingerReference: ThreeFingerFingerReference = .trackpad,
         direction: ThreeFingerDirection = .up,
         minimumTravel: Double = 0.12,
         minimumVelocity: Double = 0.75,
@@ -139,4 +139,3 @@ func validateDistance(_ value: Double, name: String, max: Double) throws {
         throw ConfigurationError.invalidValue("\(name) must be 0.0...\(max).")
     }
 }
-

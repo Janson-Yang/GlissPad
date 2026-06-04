@@ -155,8 +155,16 @@ extension ThreeFingerGestureRecognizer {
         let expected = swipe ? rule.tipSwipe.activeFinger.position : rule.tipTap.tapPosition
         let reference = swipe ? rule.tipSwipe.activeFingerReference : rule.tipTap.positionReference
         guard expected != nil else { return true }
-        let sorted = reference == .trackpad ? touches.sortedByHorizontalPosition() : touches.sorted { $0.id < $1.id }
-        return sorted[safe: expected!.index]?.id == touch.id
+        let ordered = activeFingerCandidates(touches: touches, reference: reference)
+        return ordered[safe: expected!.index] == touch.id
+    }
+
+    private func activeFingerCandidates(
+        touches: [TouchPoint],
+        reference: ThreeFingerFingerReference
+    ) -> [Int] {
+        if reference == .trackpad { return touches.sortedByHorizontalPosition().map(\.id) }
+        return touches.map(\.id)
     }
 }
 

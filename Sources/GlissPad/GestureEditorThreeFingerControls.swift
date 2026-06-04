@@ -77,9 +77,9 @@ extension GestureEditorWindowController {
         configure(threeFingerControls.swipePressModePopup, values: ThreeFingerSwipePressMode.allCases)
         configure(threeFingerControls.triggerTimingPopup, values: ThreeFingerTriggerTiming.allCases)
         configure(threeFingerControls.tipTapPositionPopup, values: ThreeFingerPosition.allCases)
-        configure(threeFingerControls.tipTapReferencePopup, values: ThreeFingerFingerReference.allCases)
+        configure(threeFingerControls.tipTapReferencePopup, values: visibleFingerReferences(for: .trackpad))
         configure(threeFingerControls.tipSwipeActiveFingerPopup, values: ThreeFingerActiveFinger.allCases)
-        configure(threeFingerControls.tipSwipeReferencePopup, values: ThreeFingerFingerReference.allCases)
+        configure(threeFingerControls.tipSwipeReferencePopup, values: visibleFingerReferences(for: .trackpad))
         configure(threeFingerControls.tipSwipeDirectionPopup, values: ThreeFingerDirection.allCases)
         configure(threeFingerControls.tipSwipeTimingPopup, values: ThreeFingerTriggerTiming.allCases)
         configure(threeFingerControls.scaleDirectionPopup, values: ThreeFingerScaleDirection.allCases)
@@ -91,10 +91,20 @@ extension GestureEditorWindowController {
     }
 
     private func configure<T>(_ popup: NSPopUpButton, values: [T]) where T: DisplayNamed {
+        popup.removeAllItems()
         popup.controlSize = .large
         popup.addItems(withTitles: values.map(\.displayName))
         popup.target = self
         popup.action = #selector(configurationControlChanged(_:))
+    }
+
+    func configureFingerReferencePopup(_ popup: NSPopUpButton, selected: ThreeFingerFingerReference) {
+        configure(popup, values: visibleFingerReferences(for: selected))
+        select(popup, value: selected)
+    }
+
+    private func visibleFingerReferences(for selected: ThreeFingerFingerReference) -> [ThreeFingerFingerReference] {
+        selected == .touchOrder ? [.trackpad, .touchOrder] : [.trackpad]
     }
 
     private func configureThreeFingerCheckBoxes() {
