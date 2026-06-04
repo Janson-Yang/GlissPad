@@ -72,10 +72,10 @@ final class ThreeFingerGestureRecognizer {
             return
         }
         if isLongTouch, active.count < 3 {
-            phase = .collecting(ThreeFingerCollectionState(startedAt: frame.timestamp))
+            phase = .collecting(currentCollection(frame: frame, active: active))
             return
         }
-        let collection = currentCollection(frame: frame)
+        var collection = currentCollection(frame: frame, active: active)
         guard isLongTouch || frame.timestamp - collection.startedAt <= effectiveCommonTimeGap else {
             phase = .cancellingUntilRelease
             return
@@ -92,15 +92,13 @@ final class ThreeFingerGestureRecognizer {
         let stableFrame = collection.threeFingerFrame ?? frame
         let stableTouches = collection.threeFingerTouches ?? active
         guard frame.timestamp - stableSince >= stableFingerDuration else {
-            phase = .collecting(ThreeFingerCollectionState(
-                startedAt: collection.startedAt,
-                threeFingerStartedAt: stableSince,
-                threeFingerFrame: stableFrame,
-                threeFingerTouches: stableTouches
-            ))
+            collection.threeFingerStartedAt = stableSince
+            collection.threeFingerFrame = stableFrame
+            collection.threeFingerTouches = stableTouches
+            phase = .collecting(collection)
             return
         }
-        phase = .tracking(ThreeFingerTrackingState(frame: frame, touches: active))
+        phase = .tracking(ThreeFingerTrackingState(frame: frame, touches: active, collection: collection))
     }
 
     func recognizedGesture(_ frame: TouchFrame) -> RecognizedGesture {
@@ -122,13 +120,9 @@ final class ThreeFingerGestureRecognizer {
         pendingTap = nil
     }
 
-    var commonTimeGap: TimeInterval {
-        TimeInterval(rule.common.maxInitialFingerTimeGapMilliseconds) / 1000
-    }
+    var commonTimeGap: TimeInterval { TimeInterval(rule.common.maxInitialFingerTimeGapMilliseconds) / 1000 }
 
-    var stableFingerDuration: TimeInterval {
-        TimeInterval(rule.common.minStableFingerCountDurationMilliseconds) / 1000
-    }
+    var stableFingerDuration: TimeInterval { TimeInterval(rule.common.minStableFingerCountDurationMilliseconds) / 1000 }
 
     private var effectiveCommonTimeGap: TimeInterval {
         if type == .threeFingerTouch, rule.touch.event == .longTouch {
@@ -141,11 +135,15 @@ final class ThreeFingerGestureRecognizer {
         type == .threeFingerTouch && rule.touch.event == .longTouch
     }
 
-    private func currentCollection(frame: TouchFrame) -> ThreeFingerCollectionState {
-        if case .collecting(let collection) = phase {
-            return collection
+    private func currentCollection(frame: TouchFrame, active: [TouchPoint]) -> ThreeFingerCollectionState {
+        var collection: ThreeFingerCollectionState
+        if case .collecting(let existingCollection) = phase {
+            collection = existingCollection
+        } else {
+            collection = ThreeFingerCollectionState(frame: frame)
         }
-        return ThreeFingerCollectionState(startedAt: frame.timestamp)
+        collection.record(frame: frame, active: active)
+        return collection
     }
 
     func regionContains(_ region: NormalizedRegion?, touches: [TouchPoint]) -> Bool {

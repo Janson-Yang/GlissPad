@@ -63,7 +63,7 @@ extension ThreeFingerGestureRecognizer {
         let distance = hypot(vector.dx, vector.dy)
         let duration = max(frame.timestamp - state.startedAt, 0.001)
         return distance >= rule.swipe.minimumTravel
-            && distance / duration >= rule.swipe.minimumVelocity
+            && distance / duration >= effectiveSwipeMinimumVelocity
             && regionContains(rule.common.endRegion, touches: touches)
             && directionMatches(
                 dx: vector.dx,
@@ -121,9 +121,28 @@ extension ThreeFingerGestureRecognizer {
         case .none:
             return true
         case .clickHeld:
-            return state.sawClick || hasPressed(frame, baseline: state.clickBaseline)
+            return state.sawClick
+                || hasPressed(frame, baseline: state.clickBaseline)
+                || state.maximumObservedPressure >= sustainedClickPressureThreshold
         case .forceClickHeld:
-            return frame.activeTouches.maximumPressure() >= rule.press.forcePressure
+            return state.maximumObservedPressure >= sustainedForcePressureThreshold
+        }
+    }
+
+    private var sustainedClickPressureThreshold: Double {
+        min(rule.press.minimumPressure, TrackpadPressureThreshold.clickSustain)
+    }
+
+    private var sustainedForcePressureThreshold: Double {
+        min(rule.press.forcePressure, TrackpadPressureThreshold.forceClickSustain)
+    }
+
+    private var effectiveSwipeMinimumVelocity: Double {
+        switch rule.swipe.pressMode {
+        case .none:
+            return rule.swipe.minimumVelocity
+        case .clickHeld, .forceClickHeld:
+            return min(rule.swipe.minimumVelocity, 0.35)
         }
     }
 

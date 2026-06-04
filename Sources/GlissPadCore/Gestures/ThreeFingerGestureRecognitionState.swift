@@ -9,12 +9,13 @@ struct ThreeFingerTrackingState: Equatable {
     var startedAt: TimeInterval
     var clickBaseline: UInt64
     var sawClick: Bool
+    var maximumObservedPressure: Double
     var completed = false
     var triggered = false
     var lastRepeatAt: TimeInterval?
     var releaseStartedAt: TimeInterval?
 
-    init(frame: TouchFrame, touches: [TouchPoint]) {
+    init(frame: TouchFrame, touches: [TouchPoint], collection: ThreeFingerCollectionState? = nil) {
         let centroid = NormalizedPoint.centroid(of: touches)
         anchors = Dictionary(uniqueKeysWithValues: touches.map { ($0.id, $0.position) })
         centroidAnchor = centroid
@@ -22,8 +23,9 @@ struct ThreeFingerTrackingState: Equatable {
         lastTouches = touches
         samples = centroid.map { [$0] } ?? []
         startedAt = frame.timestamp
-        clickBaseline = frame.clickGeneration
-        sawClick = frame.hasRecentClick
+        clickBaseline = collection?.clickBaseline ?? frame.clickGeneration
+        sawClick = (collection?.sawClick ?? false) || frame.hasRecentClick
+        maximumObservedPressure = max(collection?.maximumObservedPressure ?? 0, touches.maximumPressure())
     }
 
     mutating func appendSample(from touches: [TouchPoint]) {
@@ -32,6 +34,7 @@ struct ThreeFingerTrackingState: Equatable {
             samples.append(centroid)
         }
         lastTouches = touches
+        maximumObservedPressure = max(maximumObservedPressure, touches.maximumPressure())
     }
 }
 
@@ -40,17 +43,41 @@ struct ThreeFingerCollectionState: Equatable {
     var threeFingerStartedAt: TimeInterval?
     var threeFingerFrame: TouchFrame?
     var threeFingerTouches: [TouchPoint]?
+    var clickBaseline: UInt64
+    var sawClick: Bool
+    var maximumObservedPressure: Double
 
     init(
         startedAt: TimeInterval,
         threeFingerStartedAt: TimeInterval? = nil,
         threeFingerFrame: TouchFrame? = nil,
-        threeFingerTouches: [TouchPoint]? = nil
+        threeFingerTouches: [TouchPoint]? = nil,
+        clickBaseline: UInt64 = 0,
+        sawClick: Bool = false,
+        maximumObservedPressure: Double = 0
     ) {
         self.startedAt = startedAt
         self.threeFingerStartedAt = threeFingerStartedAt
         self.threeFingerFrame = threeFingerFrame
         self.threeFingerTouches = threeFingerTouches
+        self.clickBaseline = clickBaseline
+        self.sawClick = sawClick
+        self.maximumObservedPressure = maximumObservedPressure
+    }
+
+    init(frame: TouchFrame) {
+        self.init(
+            startedAt: frame.timestamp,
+            clickBaseline: frame.clickGeneration,
+            sawClick: false,
+            maximumObservedPressure: 0
+        )
+    }
+
+    mutating func record(frame: TouchFrame, active: [TouchPoint]) {
+        guard active.count == 3 else { return }
+        sawClick = sawClick || frame.hasRecentClick || frame.clickGeneration > clickBaseline
+        maximumObservedPressure = max(maximumObservedPressure, active.maximumPressure())
     }
 }
 
