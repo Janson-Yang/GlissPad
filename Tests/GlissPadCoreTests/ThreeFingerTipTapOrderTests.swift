@@ -28,6 +28,19 @@ final class ThreeFingerTipTapOrderTests: XCTestCase {
         XCTAssertEqual(gestures.map(\.kind), [.threeFingerTipTap])
     }
 
+    func testAutoTapFingerAllowsAnyTrackpadPosition() {
+        var rule = threeFingerRule()
+        rule.tipTap = ThreeFingerTipTapOptions(tapPosition: .auto, positionReference: .trackpad)
+        let recognizer = recognizer(rule)
+
+        XCTAssertTrue(recognizer.process(frame(touches: baseTouches(), time: 1.0)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: baseTouches(), time: 1.06)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: baseTouches() + [tapTouch(id: 1)], time: 1.08)).isEmpty)
+        let gestures = recognizer.process(frame(touches: baseTouches(), time: 1.14))
+
+        XCTAssertEqual(gestures.map(\.kind), [.threeFingerTipTap])
+    }
+
     private func recognizer(_ rule: ThreeFingerGestureRule) -> GestureRecognizer {
         GestureRecognizer(configuration: GestureConfiguration(triggers: [
             .threeFinger(id: "tip-tap", type: .threeFingerTipTap, rule: rule)

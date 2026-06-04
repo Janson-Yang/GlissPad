@@ -80,7 +80,7 @@ extension GestureEditorWindowController {
 
     private func visibleThreeFingerTipTap() throws -> ThreeFingerTipTapOptions {
         ThreeFingerTipTapOptions(
-            tapPosition: try selected(threeFingerControls.tipTapPositionPopup, values: ThreeFingerPosition.allCases),
+            tapPosition: try selected(threeFingerControls.tipTapPositionPopup, values: ThreeFingerActiveFinger.allCases),
             positionReference: try selected(threeFingerControls.tipTapReferencePopup, values: ThreeFingerFingerReference.allCases),
             tapCount: try intValue(threeFingerControls.tipTapCountField, name: "tip tap count"),
             maximumTapMilliseconds: try intValue(threeFingerControls.tipTapDurationField, name: "tip tap duration"),

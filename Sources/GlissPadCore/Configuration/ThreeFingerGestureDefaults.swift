@@ -22,7 +22,7 @@ extension GestureTriggerType {
         case .threeFingerSwipe:
             rule.swipe = ThreeFingerSwipeOptions(direction: .right)
         case .threeFingerTipTap:
-            rule.tipTap = ThreeFingerTipTapOptions(tapPosition: .left)
+            rule.tipTap = ThreeFingerTipTapOptions(tapPosition: .auto)
         case .threeFingerTipSwipe:
             rule.tipSwipe = ThreeFingerTipSwipeOptions(activeFinger: .auto, direction: .up)
         case .thumbTwoFingerScale:
@@ -39,4 +39,3 @@ extension GestureTriggerType {
         ScriptAction(language: .appleScript, script: DefaultScripts.placeholderAppleScript, timeoutSeconds: 5)
     }
 }
-

@@ -48,7 +48,9 @@ final class TipTapGestureRecognizer {
             phase = .base(base)
             return nil
         }
-        guard active.count == 2, let tipTouch = active.first(where: { $0.id != base.id }) else {
+        guard active.count == 2,
+              let tipTouch = active.first(where: { $0.id != base.id }),
+              activeFingerAllowed(tipTouch, touches: active) else {
             phase = .cancellingUntilRelease
             return nil
         }
@@ -89,6 +91,17 @@ final class TipTapGestureRecognizer {
 
     private func touch(id: Int, in touches: [TouchPoint]) -> TouchPoint? {
         touches.first { $0.id == id }
+    }
+
+    private func activeFingerAllowed(_ touch: TouchPoint, touches: [TouchPoint]) -> Bool {
+        switch rule.activeFinger {
+        case .auto:
+            return true
+        case .left:
+            return touches.sortedByHorizontalPosition().first?.id == touch.id
+        case .right:
+            return touches.sortedByHorizontalPosition().last?.id == touch.id
+        }
     }
 
     private func canTrigger(at timestamp: TimeInterval) -> Bool {

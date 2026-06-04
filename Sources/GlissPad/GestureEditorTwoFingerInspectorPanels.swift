@@ -28,6 +28,7 @@ extension GestureEditorWindowController {
         triggerParameterPanel(title: "Tip Tap Configuration", views: [
             triggerFormRow("Name", triggerNameField, controlWidth: 180),
             triggerFormRow("Type", activeTriggerLabel, controlWidth: 180),
+            triggerFormRow("Tap finger", tipTapActiveFingerPopup, controlWidth: 180),
             triggerFormRow("Maximum tap ms", tapDurationField),
             triggerFormRow("Stationary movement", holdMovementField),
             triggerFormRow("Tap movement", tapMovementField),

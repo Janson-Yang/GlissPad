@@ -76,7 +76,7 @@ extension GestureEditorWindowController {
         configure(threeFingerControls.swipeDirectionPopup, values: ThreeFingerDirection.allCases)
         configure(threeFingerControls.swipePressModePopup, values: ThreeFingerSwipePressMode.allCases)
         configure(threeFingerControls.triggerTimingPopup, values: ThreeFingerTriggerTiming.allCases)
-        configure(threeFingerControls.tipTapPositionPopup, values: ThreeFingerPosition.allCases)
+        configure(threeFingerControls.tipTapPositionPopup, values: ThreeFingerActiveFinger.allCases)
         configure(threeFingerControls.tipTapReferencePopup, values: visibleFingerReferences(for: .trackpad))
         configure(threeFingerControls.tipSwipeActiveFingerPopup, values: ThreeFingerActiveFinger.allCases)
         configure(threeFingerControls.tipSwipeReferencePopup, values: visibleFingerReferences(for: .trackpad))

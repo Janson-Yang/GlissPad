@@ -152,7 +152,7 @@ extension ThreeFingerGestureRecognizer {
     }
 
     private func activeFingerAllowed(_ touch: TouchPoint, touches: [TouchPoint], swipe: Bool) -> Bool {
-        let expected = swipe ? rule.tipSwipe.activeFinger.position : rule.tipTap.tapPosition
+        let expected = swipe ? rule.tipSwipe.activeFinger.position : rule.tipTap.tapPosition.position
         let reference = swipe ? rule.tipSwipe.activeFingerReference : rule.tipTap.positionReference
         guard expected != nil else { return true }
         let ordered = activeFingerCandidates(touches: touches, reference: reference)

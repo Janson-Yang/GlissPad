@@ -31,6 +31,7 @@ final class ThreeFingerGestureConfigurationTests: XCTestCase {
     }
 
     func testTipFingerReferenceDefaultsToTrackpadPosition() {
+        XCTAssertEqual(ThreeFingerTipTapOptions().tapPosition, .auto)
         XCTAssertEqual(ThreeFingerTipTapOptions().positionReference, .trackpad)
         XCTAssertEqual(ThreeFingerTipSwipeOptions().activeFingerReference, .trackpad)
     }

@@ -65,6 +65,7 @@ final class GestureEditorWindowController: NSWindowController, NSWindowDelegate 
     let tapDurationField = FormFactory.textField()
     let tapIntervalField = FormFactory.textField()
     let tapMovementField = FormFactory.textField()
+    let tipTapActiveFingerPopup = NSPopUpButton()
     let tipTapStationaryMovementField = FormFactory.textField()
     let transformScaleField = FormFactory.textField()
     let transformRotationField = FormFactory.textField()

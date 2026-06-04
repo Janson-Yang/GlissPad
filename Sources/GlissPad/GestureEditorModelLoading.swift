@@ -66,6 +66,7 @@ extension GestureEditorWindowController {
             return
         }
         if let rule = selectedSlot.tipTapRule(in: configuration) {
+            tipTapActiveFingerPopup.selectItem(withTitle: rule.activeFinger.displayName)
             tapDurationField.stringValue = "\(rule.maximumTapMilliseconds)"
             holdMovementField.stringValue = "\(rule.stationaryMovement)"
             tapMovementField.stringValue = "\(rule.tapMovement)"

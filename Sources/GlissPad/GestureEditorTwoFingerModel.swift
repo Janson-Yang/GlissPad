@@ -19,6 +19,7 @@ extension GestureEditorWindowController {
         guard var rule = selectedSlot.tipTapRule(in: configuration) else { return }
         rule.name = try nonEmptyString(triggerNameField, name: "trigger name")
         rule.isEnabled = enabledSwitch.state == .on
+        rule.activeFinger = try selectedTipTapActiveFinger()
         rule.maximumTapMilliseconds = try intValue(tapDurationField, name: "maximum tap duration")
         rule.stationaryMovement = try doubleValue(holdMovementField, name: "stationary movement")
         rule.tapMovement = try doubleValue(tapMovementField, name: "tap movement")

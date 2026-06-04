@@ -37,7 +37,7 @@ public struct ThreeFingerSwipeOptions: Codable, Equatable, Sendable {
 
 public struct ThreeFingerTipTapOptions: Codable, Equatable, Sendable {
     public var fixedFingers: Int
-    public var tapPosition: ThreeFingerPosition
+    public var tapPosition: ThreeFingerActiveFinger
     public var positionReference: ThreeFingerFingerReference
     public var tapCount: Int
     public var maximumTapMilliseconds: Int
@@ -47,7 +47,7 @@ public struct ThreeFingerTipTapOptions: Codable, Equatable, Sendable {
 
     public init(
         fixedFingers: Int = 2,
-        tapPosition: ThreeFingerPosition = .left,
+        tapPosition: ThreeFingerActiveFinger = .auto,
         positionReference: ThreeFingerFingerReference = .trackpad,
         tapCount: Int = 1,
         maximumTapMilliseconds: Int = 180,

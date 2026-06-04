@@ -120,6 +120,14 @@ extension GestureEditorWindowController {
         return timing
     }
 
+    func selectedTipTapActiveFinger() throws -> TipTapActiveFinger {
+        guard let title = tipTapActiveFingerPopup.selectedItem?.title,
+              let finger = TipTapActiveFinger.allCases.first(where: { $0.displayName == title }) else {
+            throw GUIValidationError.invalidField("tip tap active finger")
+        }
+        return finger
+    }
+
     func doubleValue(_ field: NSTextField, name: String) throws -> Double {
         guard let value = Double(field.stringValue) else {
             throw GUIValidationError.invalidField(name)

@@ -42,6 +42,10 @@ extension GestureEditorWindowController {
         oneFingerPressKindPopup.addItems(withTitles: OneFingerPressKind.allCases.map(\.displayName))
         oneFingerPressKindPopup.target = self
         oneFingerPressKindPopup.action = #selector(configurationControlChanged(_:))
+        tipTapActiveFingerPopup.controlSize = .large
+        tipTapActiveFingerPopup.addItems(withTitles: TipTapActiveFinger.allCases.map(\.displayName))
+        tipTapActiveFingerPopup.target = self
+        tipTapActiveFingerPopup.action = #selector(configurationControlChanged(_:))
         holdPressKindPopup.controlSize = .large
         configureHoldPressKindOptions(for: nil)
         holdPressKindPopup.target = self

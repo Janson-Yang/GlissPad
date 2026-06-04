@@ -1,8 +1,23 @@
 import Foundation
 
+public enum TipTapActiveFinger: String, CaseIterable, Codable, Sendable {
+    case auto
+    case left
+    case right
+
+    public var displayName: String {
+        switch self {
+        case .auto: return "Auto"
+        case .left: return "Left"
+        case .right: return "Right"
+        }
+    }
+}
+
 public struct TipTapGestureRule: Codable, Equatable, Sendable {
     public var name: String
     public var isEnabled: Bool
+    public var activeFinger: TipTapActiveFinger
     public var maximumTapMilliseconds: Int
     public var stationaryMovement: Double
     public var tapMovement: Double
@@ -11,13 +26,14 @@ public struct TipTapGestureRule: Codable, Equatable, Sendable {
     public var actions: [GestureAction]
 
     enum CodingKeys: String, CodingKey {
-        case name, isEnabled, maximumTapMilliseconds, stationaryMovement, tapMovement
+        case name, isEnabled, activeFinger, maximumTapMilliseconds, stationaryMovement, tapMovement
         case cooldownMilliseconds, region, action, actions
     }
 
     public init(
         name: String,
         isEnabled: Bool,
+        activeFinger: TipTapActiveFinger = .auto,
         maximumTapMilliseconds: Int = 300,
         stationaryMovement: Double = 0.04,
         tapMovement: Double = 0.06,
@@ -27,6 +43,7 @@ public struct TipTapGestureRule: Codable, Equatable, Sendable {
     ) {
         self.name = name
         self.isEnabled = isEnabled
+        self.activeFinger = activeFinger
         self.maximumTapMilliseconds = maximumTapMilliseconds
         self.stationaryMovement = stationaryMovement
         self.tapMovement = tapMovement
@@ -39,6 +56,7 @@ public struct TipTapGestureRule: Codable, Equatable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+        activeFinger = try container.decodeIfPresent(TipTapActiveFinger.self, forKey: .activeFinger) ?? .auto
         maximumTapMilliseconds = try container.decodeIfPresent(Int.self, forKey: .maximumTapMilliseconds) ?? 300
         stationaryMovement = try container.decodeIfPresent(Double.self, forKey: .stationaryMovement) ?? 0.04
         tapMovement = try container.decodeIfPresent(Double.self, forKey: .tapMovement) ?? 0.06
@@ -53,6 +71,7 @@ public struct TipTapGestureRule: Codable, Equatable, Sendable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(name, forKey: .name)
         try container.encode(isEnabled, forKey: .isEnabled)
+        try container.encode(activeFinger, forKey: .activeFinger)
         try container.encode(maximumTapMilliseconds, forKey: .maximumTapMilliseconds)
         try container.encode(stationaryMovement, forKey: .stationaryMovement)
         try container.encode(tapMovement, forKey: .tapMovement)
