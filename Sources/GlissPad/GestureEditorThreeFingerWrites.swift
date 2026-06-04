@@ -92,6 +92,7 @@ extension GestureEditorWindowController {
 
     private func visibleThreeFingerTipSwipe() throws -> ThreeFingerTipSwipeOptions {
         ThreeFingerTipSwipeOptions(
+            fixedFingers: try selectedTipSwipeFixedFingers(),
             activeFinger: try selected(threeFingerControls.tipSwipeActiveFingerPopup, values: ThreeFingerActiveFinger.allCases),
             activeFingerReference: try selected(threeFingerControls.tipSwipeReferencePopup, values: ThreeFingerFingerReference.allCases),
             direction: try selected(threeFingerControls.tipSwipeDirectionPopup, values: ThreeFingerDirection.allCases),

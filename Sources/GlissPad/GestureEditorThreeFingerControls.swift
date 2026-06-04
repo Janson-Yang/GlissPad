@@ -13,6 +13,7 @@ final class ThreeFingerGestureControls {
     let triggerTimingPopup = NSPopUpButton()
     let tipTapPositionPopup = NSPopUpButton()
     let tipTapReferencePopup = NSPopUpButton()
+    let tipSwipeFixedFingerCountPopup = NSPopUpButton()
     let tipSwipeActiveFingerPopup = NSPopUpButton()
     let tipSwipeReferencePopup = NSPopUpButton()
     let tipSwipeDirectionPopup = NSPopUpButton()
@@ -78,6 +79,7 @@ extension GestureEditorWindowController {
         configure(threeFingerControls.triggerTimingPopup, values: ThreeFingerTriggerTiming.allCases)
         configure(threeFingerControls.tipTapPositionPopup, values: ThreeFingerActiveFinger.allCases)
         configure(threeFingerControls.tipTapReferencePopup, values: visibleFingerReferences(for: .trackpad))
+        configure(threeFingerControls.tipSwipeFixedFingerCountPopup, values: TipSwipeFixedFingerCountOption.allCases)
         configure(threeFingerControls.tipSwipeActiveFingerPopup, values: ThreeFingerActiveFinger.allCases)
         configure(threeFingerControls.tipSwipeReferencePopup, values: visibleFingerReferences(for: .trackpad))
         configure(threeFingerControls.tipSwipeDirectionPopup, values: ThreeFingerDirection.allCases)
@@ -103,8 +105,26 @@ extension GestureEditorWindowController {
         select(popup, value: selected)
     }
 
+    func configureTipSwipeActiveFingerPopup(selected: ThreeFingerActiveFinger, fixedFingers: Int) {
+        configure(threeFingerControls.tipSwipeActiveFingerPopup, values: visibleTipSwipeActiveFingers(
+            selected: selected,
+            fixedFingers: fixedFingers
+        ))
+        select(threeFingerControls.tipSwipeActiveFingerPopup, value: selected)
+    }
+
     private func visibleFingerReferences(for selected: ThreeFingerFingerReference) -> [ThreeFingerFingerReference] {
         selected == .touchOrder ? [.trackpad, .touchOrder] : [.trackpad]
+    }
+
+    private func visibleTipSwipeActiveFingers(
+        selected: ThreeFingerActiveFinger,
+        fixedFingers: Int
+    ) -> [ThreeFingerActiveFinger] {
+        let values: [ThreeFingerActiveFinger] = fixedFingers == 1
+            ? [.auto, .left, .right]
+            : ThreeFingerActiveFinger.allCases
+        return values.contains(selected) ? values : values + [selected]
     }
 
     private func configureThreeFingerCheckBoxes() {

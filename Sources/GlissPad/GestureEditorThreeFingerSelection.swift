@@ -13,5 +13,11 @@ extension GestureEditorWindowController {
         }
         return value
     }
-}
 
+    func selectedTipSwipeFixedFingers() throws -> Int {
+        try selected(
+            threeFingerControls.tipSwipeFixedFingerCountPopup,
+            values: TipSwipeFixedFingerCountOption.allCases
+        ).value
+    }
+}

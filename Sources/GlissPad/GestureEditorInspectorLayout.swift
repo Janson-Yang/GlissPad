@@ -100,24 +100,44 @@ extension GestureEditorWindowController {
             content.leadingAnchor.constraint(equalTo: documentView.leadingAnchor),
             content.trailingAnchor.constraint(equalTo: documentView.trailingAnchor),
             content.topAnchor.constraint(equalTo: documentView.topAnchor),
-            content.bottomAnchor.constraint(equalTo: documentView.bottomAnchor)
+            content.bottomAnchor.constraint(lessThanOrEqualTo: documentView.bottomAnchor)
         ])
         return scrollView
     }
 }
 
-private final class InspectorScrollView: NSScrollView {
+final class InspectorScrollView: NSScrollView {
     override func layout() {
         super.layout()
         resizeDocumentView()
+    }
+
+    override func viewWillDraw() {
+        super.viewWillDraw()
+        resizeDocumentView()
+    }
+
+    func scheduleContentSizeRefresh() {
+        needsLayout = true
+        DispatchQueue.main.async { [weak self] in
+            self?.layoutSubtreeIfNeeded()
+            self?.resizeDocumentView()
+        }
     }
 
     private func resizeDocumentView() {
         guard let documentView else { return }
         let width = contentView.bounds.width
         documentView.frame.size.width = width
-        let height = max(contentView.bounds.height, documentView.fittingSize.height)
+        documentView.layoutSubtreeIfNeeded()
+        let height = max(contentView.bounds.height, measuredContentHeight(in: documentView))
         documentView.frame = NSRect(x: 0, y: 0, width: width, height: height)
+    }
+
+    private func measuredContentHeight(in documentView: NSView) -> CGFloat {
+        documentView.subviews
+            .map { max($0.fittingSize.height, $0.frame.height) }
+            .max() ?? documentView.fittingSize.height
     }
 }
 

@@ -68,6 +68,9 @@ extension GestureEditorWindowController: NSTextFieldDelegate, NSTextViewDelegate
         if sender as AnyObject === multiFingerSwipePresetPopup {
             syncPathPointsToSelectedSwipePreset()
         }
+        if sender as AnyObject === threeFingerControls.tipSwipeFixedFingerCountPopup {
+            syncTipSwipeActiveFingerOptions()
+        }
         secondaryKeyField.isEnabled = keyboardModePopup.selectedItem?.title
             == KeyboardShortcutMode.keyCombination.displayName
         commitVisibleEdits(restartActiveListener: true)
@@ -108,6 +111,13 @@ extension GestureEditorWindowController: NSTextFieldDelegate, NSTextViewDelegate
         guard let kind = try? selectedHoldPressKind() else { return }
         pressureField.stringValue = formatPressure(TrackpadPressureThreshold.value(for: kind))
         sustainPressureField.stringValue = formatPressure(TrackpadPressureThreshold.sustain(for: kind))
+    }
+
+    private func syncTipSwipeActiveFingerOptions() {
+        let selected = try? selected(threeFingerControls.tipSwipeActiveFingerPopup, values: ThreeFingerActiveFinger.allCases)
+        let fixedFingers = (try? selectedTipSwipeFixedFingers()) ?? 2
+        let nextSelected = fixedFingers == 1 && selected == .middle ? .auto : selected ?? .auto
+        configureTipSwipeActiveFingerPopup(selected: nextSelected, fixedFingers: fixedFingers)
     }
 
     func configureHoldPressKindOptions(for type: GestureTriggerType?) {

@@ -208,6 +208,9 @@ extension GestureEditorWindowController {
         row.alignment = .centerY
         row.spacing = 14
         control.widthAnchor.constraint(lessThanOrEqualToConstant: controlWidth).isActive = true
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
+        control.setContentCompressionResistancePriority(.required, for: .vertical)
+        row.setContentCompressionResistancePriority(.required, for: .vertical)
         return row
     }
 

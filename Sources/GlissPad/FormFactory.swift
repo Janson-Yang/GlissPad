@@ -17,6 +17,8 @@ enum FormFactory {
         field.controlSize = .large
         field.bezelStyle = .roundedBezel
         field.widthAnchor.constraint(equalToConstant: width).isActive = true
+        field.heightAnchor.constraint(greaterThanOrEqualToConstant: 28).isActive = true
+        field.setContentCompressionResistancePriority(.required, for: .vertical)
         return field
     }
 

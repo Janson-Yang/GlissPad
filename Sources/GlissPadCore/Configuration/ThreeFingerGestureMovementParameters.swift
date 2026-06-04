@@ -116,8 +116,11 @@ public struct ThreeFingerTipSwipeOptions: Codable, Equatable, Sendable {
     }
 
     public func validate(name: String) throws {
-        guard fixedFingers == 2 else {
-            throw ConfigurationError.invalidValue("\(name).fixedFingers must be 2.")
+        guard [1, 2].contains(fixedFingers) else {
+            throw ConfigurationError.invalidValue("\(name).fixedFingers must be 1 or 2.")
+        }
+        guard fixedFingers == 2 || activeFinger != .middle else {
+            throw ConfigurationError.invalidValue("\(name).activeFinger middle requires 2 fixed fingers.")
         }
         try validateDistance(minimumTravel, name: "\(name).minimumTravel", max: 1.2)
         try validateMovement(maximumFixedFingerMovement, name: "\(name).maximumFixedFingerMovement")

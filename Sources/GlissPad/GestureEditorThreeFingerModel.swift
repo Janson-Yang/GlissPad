@@ -65,7 +65,12 @@ extension GestureEditorWindowController {
         threeFingerControls.directionToleranceField.stringValue = "\(rule.swipe.directionToleranceDegrees)"
         select(threeFingerControls.tipTapPositionPopup, value: rule.tipTap.tapPosition)
         configureFingerReferencePopup(threeFingerControls.tipTapReferencePopup, selected: rule.tipTap.positionReference)
-        select(threeFingerControls.tipSwipeActiveFingerPopup, value: rule.tipSwipe.activeFinger)
+        let fixedFingerCount = TipSwipeFixedFingerCountOption.option(for: rule.tipSwipe.fixedFingers)
+        select(threeFingerControls.tipSwipeFixedFingerCountPopup, value: fixedFingerCount)
+        configureTipSwipeActiveFingerPopup(
+            selected: rule.tipSwipe.activeFinger,
+            fixedFingers: rule.tipSwipe.fixedFingers
+        )
         configureFingerReferencePopup(threeFingerControls.tipSwipeReferencePopup, selected: rule.tipSwipe.activeFingerReference)
         select(threeFingerControls.tipSwipeDirectionPopup, value: rule.tipSwipe.direction)
         select(threeFingerControls.tipSwipeTimingPopup, value: rule.tipSwipe.triggerTiming)

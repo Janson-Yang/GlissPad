@@ -4,7 +4,7 @@ extension ThreeFingerGestureRecognizer {
     func processTipTap(_ frame: TouchFrame) -> RecognizedGesture? {
         switch phase {
         case .idle:
-            startTipBaseIfPossible(frame)
+            startTipBaseIfPossible(frame, swipe: false)
         case .tipBase(let base):
             return updateTipBase(frame, base: base, swipe: false)
         case .tip(let state):
@@ -20,7 +20,7 @@ extension ThreeFingerGestureRecognizer {
     func processTipSwipe(_ frame: TouchFrame) -> RecognizedGesture? {
         switch phase {
         case .idle:
-            startTipBaseIfPossible(frame)
+            startTipBaseIfPossible(frame, swipe: true)
         case .tipBase(let base):
             return updateTipBase(frame, base: base, swipe: true)
         case .tip(var state):
@@ -33,9 +33,10 @@ extension ThreeFingerGestureRecognizer {
         return nil
     }
 
-    private func startTipBaseIfPossible(_ frame: TouchFrame) {
+    private func startTipBaseIfPossible(_ frame: TouchFrame, swipe: Bool) {
         let active = frame.activeTouches
-        guard active.count == 2, regionContains(rule.common.region, touches: active) else { return }
+        let fixedFingers = swipe ? rule.tipSwipe.fixedFingers : rule.tipTap.fixedFingers
+        guard active.count == fixedFingers, regionContains(rule.common.region, touches: active) else { return }
         phase = .tipBase(ThreeFingerTipBase(
             anchors: Dictionary(uniqueKeysWithValues: active.map { ($0.id, $0.position) }),
             startedAt: frame.timestamp
@@ -56,7 +57,7 @@ extension ThreeFingerGestureRecognizer {
             phase = .cancellingUntilRelease
             return nil
         }
-        guard active.count == 3 else {
+        guard active.count == base.anchors.count + 1 else {
             phase = .tipBase(base)
             return nil
         }
@@ -152,11 +153,22 @@ extension ThreeFingerGestureRecognizer {
     }
 
     private func activeFingerAllowed(_ touch: TouchPoint, touches: [TouchPoint], swipe: Bool) -> Bool {
-        let expected = swipe ? rule.tipSwipe.activeFinger.position : rule.tipTap.tapPosition.position
+        let selected = swipe ? rule.tipSwipe.activeFinger : rule.tipTap.tapPosition
         let reference = swipe ? rule.tipSwipe.activeFingerReference : rule.tipTap.positionReference
-        guard expected != nil else { return true }
+        guard selected != .auto, let index = activeFingerIndex(selected, touchCount: touches.count) else {
+            return selected == .auto
+        }
         let ordered = activeFingerCandidates(touches: touches, reference: reference)
-        return ordered[safe: expected!.index] == touch.id
+        return ordered[safe: index] == touch.id
+    }
+
+    private func activeFingerIndex(_ finger: ThreeFingerActiveFinger, touchCount: Int) -> Int? {
+        switch finger {
+        case .auto: return nil
+        case .left: return 0
+        case .middle: return touchCount == 3 ? 1 : nil
+        case .right: return touchCount - 1
+        }
     }
 
     private func activeFingerCandidates(
@@ -165,27 +177,6 @@ extension ThreeFingerGestureRecognizer {
     ) -> [Int] {
         if reference == .trackpad { return touches.sortedByHorizontalPosition().map(\.id) }
         return touches.map(\.id)
-    }
-}
-
-private extension ThreeFingerActiveFinger {
-    var position: ThreeFingerPosition? {
-        switch self {
-        case .auto: return nil
-        case .left: return .left
-        case .middle: return .middle
-        case .right: return .right
-        }
-    }
-}
-
-private extension ThreeFingerPosition {
-    var index: Int {
-        switch self {
-        case .left: return 0
-        case .middle: return 1
-        case .right: return 2
-        }
     }
 }
 

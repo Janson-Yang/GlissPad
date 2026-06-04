@@ -91,15 +91,18 @@ extension GestureEditorWindowController {
 
     private func threeFingerTipSwipeRows() -> [NSView] {
         [
-            triggerFormRow("Active finger", threeFingerControls.tipSwipeActiveFingerPopup, controlWidth: 180),
-            triggerFormRow("Finger reference", threeFingerControls.tipSwipeReferencePopup, controlWidth: 180),
+            triggerFormRow("Fixed fingers", threeFingerControls.tipSwipeFixedFingerCountPopup, controlWidth: 180),
+            triggerFormRow("Sliding finger", threeFingerControls.tipSwipeActiveFingerPopup, controlWidth: 180),
             triggerFormRow("Direction", threeFingerControls.tipSwipeDirectionPopup, controlWidth: 180),
             triggerFormRow("Trigger timing", threeFingerControls.tipSwipeTimingPopup, controlWidth: 180),
-            triggerFormRow("Minimum travel", threeFingerControls.tipSwipeTravelField),
-            triggerFormRow("Minimum velocity", threeFingerControls.tipSwipeVelocityField),
-            triggerFormRow("Direction tolerance", threeFingerControls.tipSwipeDirectionToleranceField),
-            triggerFormRow("Fixed movement", threeFingerControls.tipSwipeFixedMovementField),
-            triggerFormRow("Fixed hold ms", threeFingerControls.tipSwipeFixedHoldField)
+            DisclosureSectionView(title: "Advanced parameters", views: [
+                triggerFormRow("Finger reference", threeFingerControls.tipSwipeReferencePopup, controlWidth: 180),
+                triggerFormRow("Minimum travel", threeFingerControls.tipSwipeTravelField),
+                triggerFormRow("Minimum velocity", threeFingerControls.tipSwipeVelocityField),
+                triggerFormRow("Direction tolerance", threeFingerControls.tipSwipeDirectionToleranceField),
+                triggerFormRow("Fixed movement", threeFingerControls.tipSwipeFixedMovementField),
+                triggerFormRow("Fixed hold ms", threeFingerControls.tipSwipeFixedHoldField)
+            ], minimumWidth: triggerFormLabelWidth + 14 + 220)
         ]
     }
 
