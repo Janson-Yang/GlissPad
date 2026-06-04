@@ -33,6 +33,17 @@ public final class GestureRecognizer: @unchecked Sendable {
         return prioritized(recognized)
     }
 
+    func processTimer(at timestamp: TimeInterval) -> [RecognizedGesture] {
+        let recognized = configuration.triggers.compactMap { trigger in
+            processTimer(trigger, timestamp: timestamp)
+        }
+        return prioritized(recognized)
+    }
+
+    func nextTimerDeadline() -> TimeInterval? {
+        configuration.triggers.compactMap(nextTimerDeadline).min()
+    }
+
     private func addState(for trigger: GestureRule) {
         switch trigger {
         case .oneFinger(let id, let type, let rule):
@@ -107,6 +118,16 @@ public final class GestureRecognizer: @unchecked Sendable {
         case .threeFinger(let id, _, _):
             return threeFingerRecognizers[id]?.process(frame)
         }
+    }
+
+    private func processTimer(_ trigger: GestureRule, timestamp: TimeInterval) -> RecognizedGesture? {
+        guard case .threeFinger(let id, _, _) = trigger else { return nil }
+        return threeFingerRecognizers[id]?.processTimer(at: timestamp)
+    }
+
+    private func nextTimerDeadline(_ trigger: GestureRule) -> TimeInterval? {
+        guard case .threeFinger(let id, _, _) = trigger else { return nil }
+        return threeFingerRecognizers[id]?.nextTimerDeadline()
     }
 
     private func prioritized(_ gestures: [RecognizedGesture]) -> [RecognizedGesture] {

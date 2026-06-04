@@ -1,11 +1,13 @@
 import Foundation
 
-final class GesturePipeline {
+final class GesturePipeline: @unchecked Sendable {
     private let recognizer: GestureRecognizer
     private let actionRunner: ActionRunning
     private let logger: Logger
     private let notificationHandler: GestureNotificationHandler?
     private let queue = DispatchQueue(label: "glisspad.gesture-pipeline")
+    private var pendingTimer: DispatchSourceTimer?
+    private var timerGeneration = 0
 
     init(
         recognizer: GestureRecognizer,
@@ -20,14 +22,43 @@ final class GesturePipeline {
     }
 
     func handle(_ frame: TouchFrame) {
-        queue.async { [recognizer, actionRunner, logger, notificationHandler] in
+        queue.async { [self] in
             logger.debug(Self.describe(frame))
-            recognizer.process(frame).forEach { gesture in
-                logger.info("Recognized \(gesture.kind.rawValue); running \(gesture.actions.count) action(s).")
-                notificationHandler?(GestureNotification(gesture: gesture))
-                actionRunner.run(gesture.actions)
-            }
+            run(recognizer.process(frame))
+            scheduleTimer(referenceTimestamp: frame.timestamp)
         }
+    }
+
+    private func run(_ gestures: [RecognizedGesture]) {
+        gestures.forEach { gesture in
+            logger.info("Recognized \(gesture.kind.rawValue); running \(gesture.actions.count) action(s).")
+            notificationHandler?(GestureNotification(gesture: gesture))
+            actionRunner.run(gesture.actions)
+        }
+    }
+
+    private func scheduleTimer(referenceTimestamp: TimeInterval) {
+        timerGeneration += 1
+        pendingTimer?.cancel()
+        pendingTimer = nil
+        guard let deadline = recognizer.nextTimerDeadline() else { return }
+        let delay = max(0, deadline - referenceTimestamp)
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        let generation = timerGeneration
+        timer.schedule(deadline: .now() + delay, leeway: .milliseconds(10))
+        timer.setEventHandler { [weak self] in
+            self?.fireTimer(generation: generation, timestamp: deadline)
+        }
+        pendingTimer = timer
+        timer.resume()
+    }
+
+    private func fireTimer(generation: Int, timestamp: TimeInterval) {
+        guard generation == timerGeneration else { return }
+        pendingTimer?.cancel()
+        pendingTimer = nil
+        run(recognizer.processTimer(at: timestamp))
+        scheduleTimer(referenceTimestamp: timestamp)
     }
 
     private static func describe(_ frame: TouchFrame) -> String {

@@ -42,14 +42,41 @@ final class ThreeFingerGestureRecognizer {
         }
     }
 
+    func processTimer(at timestamp: TimeInterval) -> RecognizedGesture? {
+        guard rule.isEnabled else {
+            reset()
+            return nil
+        }
+        switch type {
+        case .threeFingerTouch:
+            return processTouchTimer(at: timestamp)
+        default:
+            return nil
+        }
+    }
+
+    func nextTimerDeadline() -> TimeInterval? {
+        guard rule.isEnabled else { return nil }
+        switch type {
+        case .threeFingerTouch:
+            return nextTouchDeadline()
+        default:
+            return nil
+        }
+    }
+
     func startTrackingIfPossible(_ frame: TouchFrame, region: NormalizedRegion?) {
         let active = frame.activeTouches
         guard !active.isEmpty else {
             phase = .idle
             return
         }
+        if isLongTouch, active.count < 3 {
+            phase = .collecting(ThreeFingerCollectionState(startedAt: frame.timestamp))
+            return
+        }
         let collection = currentCollection(frame: frame)
-        guard frame.timestamp - collection.startedAt <= commonTimeGap else {
+        guard isLongTouch || frame.timestamp - collection.startedAt <= effectiveCommonTimeGap else {
             phase = .cancellingUntilRelease
             return
         }
@@ -62,10 +89,14 @@ final class ThreeFingerGestureRecognizer {
             return
         }
         let stableSince = collection.threeFingerStartedAt ?? frame.timestamp
+        let stableFrame = collection.threeFingerFrame ?? frame
+        let stableTouches = collection.threeFingerTouches ?? active
         guard frame.timestamp - stableSince >= stableFingerDuration else {
             phase = .collecting(ThreeFingerCollectionState(
                 startedAt: collection.startedAt,
-                threeFingerStartedAt: stableSince
+                threeFingerStartedAt: stableSince,
+                threeFingerFrame: stableFrame,
+                threeFingerTouches: stableTouches
             ))
             return
         }
@@ -91,12 +122,23 @@ final class ThreeFingerGestureRecognizer {
         pendingTap = nil
     }
 
-    private var commonTimeGap: TimeInterval {
+    var commonTimeGap: TimeInterval {
         TimeInterval(rule.common.maxInitialFingerTimeGapMilliseconds) / 1000
     }
 
-    private var stableFingerDuration: TimeInterval {
+    var stableFingerDuration: TimeInterval {
         TimeInterval(rule.common.minStableFingerCountDurationMilliseconds) / 1000
+    }
+
+    private var effectiveCommonTimeGap: TimeInterval {
+        if type == .threeFingerTouch, rule.touch.event == .longTouch {
+            return max(commonTimeGap, 0.35)
+        }
+        return commonTimeGap
+    }
+
+    private var isLongTouch: Bool {
+        type == .threeFingerTouch && rule.touch.event == .longTouch
     }
 
     private func currentCollection(frame: TouchFrame) -> ThreeFingerCollectionState {

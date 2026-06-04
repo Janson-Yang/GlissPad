@@ -54,6 +54,32 @@ final class ThreeFingerGestureRecognizerTests: XCTestCase {
         XCTAssertEqual(recognizer.process(frame(touches: touches(at: 0.4, 0.5), time: 1.28)).map(\.kind), [.threeFingerTouch])
     }
 
+    func testTouchEndTriggersWhenReleaseStartsOneFingerAtATime() {
+        var rule = threeFingerRule(.threeFingerTouch)
+        rule.touch = ThreeFingerTouchOptions(event: .touchEnd)
+        let recognizer = recognizer(.threeFingerTouch, rule: rule)
+
+        XCTAssertTrue(recognizer.process(frame(touches: touches(at: 0.4, 0.5), time: 1.0)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: touches(at: 0.4, 0.5), time: 1.04)).isEmpty)
+        let gestures = recognizer.process(frame(touches: baseTouches(), time: 1.12))
+
+        XCTAssertEqual(gestures.map(\.kind), [.threeFingerTouch])
+        XCTAssertTrue(recognizer.process(frame(touches: [], time: 1.14)).isEmpty)
+    }
+
+    func testLongTouchThresholdCanTriggerWhenReleaseStartsAfterQuietHold() {
+        var rule = threeFingerRule(.threeFingerTouch)
+        rule.touch = ThreeFingerTouchOptions(event: .longTouch, holdMilliseconds: 100)
+        let recognizer = recognizer(.threeFingerTouch, rule: rule)
+
+        XCTAssertTrue(recognizer.process(frame(touches: touches(at: 0.4, 0.5), time: 1.0)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: touches(at: 0.4, 0.5), time: 1.04)).isEmpty)
+        let gestures = recognizer.process(frame(touches: baseTouches(), time: 1.2))
+
+        XCTAssertEqual(gestures.map(\.kind), [.threeFingerTouch])
+        XCTAssertTrue(recognizer.process(frame(touches: [], time: 1.22)).isEmpty)
+    }
+
     func testLongTouchCanTriggerOnReleaseAfterHoldThreshold() {
         var rule = threeFingerRule(.threeFingerTouch)
         rule.touch = ThreeFingerTouchOptions(
@@ -66,9 +92,10 @@ final class ThreeFingerGestureRecognizerTests: XCTestCase {
         XCTAssertTrue(recognizer.process(frame(touches: touches(at: 0.4, 0.5), time: 1.0)).isEmpty)
         XCTAssertTrue(recognizer.process(frame(touches: touches(at: 0.4, 0.5), time: 1.04)).isEmpty)
         XCTAssertTrue(recognizer.process(frame(touches: touches(at: 0.4, 0.5), time: 1.2)).isEmpty)
-        let gestures = recognizer.process(frame(touches: [], time: 1.24))
+        let gestures = recognizer.process(frame(touches: baseTouches(), time: 1.24))
 
         XCTAssertEqual(gestures.map(\.kind), [.threeFingerTouch])
+        XCTAssertTrue(recognizer.process(frame(touches: [], time: 1.26)).isEmpty)
     }
 
     func testPressCanRequireRightFingerPressureBias() {

@@ -2,6 +2,7 @@ import Foundation
 
 struct ThreeFingerTrackingState: Equatable {
     var anchors: [Int: NormalizedPoint]
+    var centroidAnchor: NormalizedPoint?
     var startTouches: [TouchPoint]
     var lastTouches: [TouchPoint]
     var samples: [NormalizedPoint]
@@ -11,12 +12,15 @@ struct ThreeFingerTrackingState: Equatable {
     var completed = false
     var triggered = false
     var lastRepeatAt: TimeInterval?
+    var releaseStartedAt: TimeInterval?
 
     init(frame: TouchFrame, touches: [TouchPoint]) {
+        let centroid = NormalizedPoint.centroid(of: touches)
         anchors = Dictionary(uniqueKeysWithValues: touches.map { ($0.id, $0.position) })
+        centroidAnchor = centroid
         startTouches = touches
         lastTouches = touches
-        samples = NormalizedPoint.centroid(of: touches).map { [$0] } ?? []
+        samples = centroid.map { [$0] } ?? []
         startedAt = frame.timestamp
         clickBaseline = frame.clickGeneration
         sawClick = frame.hasRecentClick
@@ -34,10 +38,19 @@ struct ThreeFingerTrackingState: Equatable {
 struct ThreeFingerCollectionState: Equatable {
     var startedAt: TimeInterval
     var threeFingerStartedAt: TimeInterval?
+    var threeFingerFrame: TouchFrame?
+    var threeFingerTouches: [TouchPoint]?
 
-    init(startedAt: TimeInterval, threeFingerStartedAt: TimeInterval? = nil) {
+    init(
+        startedAt: TimeInterval,
+        threeFingerStartedAt: TimeInterval? = nil,
+        threeFingerFrame: TouchFrame? = nil,
+        threeFingerTouches: [TouchPoint]? = nil
+    ) {
         self.startedAt = startedAt
         self.threeFingerStartedAt = threeFingerStartedAt
+        self.threeFingerFrame = threeFingerFrame
+        self.threeFingerTouches = threeFingerTouches
     }
 }
 
@@ -65,6 +78,7 @@ enum ThreeFingerRecognitionPhase: Equatable {
     case idle
     case collecting(ThreeFingerCollectionState)
     case tracking(ThreeFingerTrackingState)
+    case releasing(ThreeFingerTrackingState)
     case tipBase(ThreeFingerTipBase)
     case tip(ThreeFingerTipState)
     case cancellingUntilRelease

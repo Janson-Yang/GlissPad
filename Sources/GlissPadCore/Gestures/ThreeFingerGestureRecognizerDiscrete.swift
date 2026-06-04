@@ -9,6 +9,8 @@ extension ThreeFingerGestureRecognizer {
             return triggerTouchStartIfNeeded(frame, state: &state)
         case .tracking(var state):
             return updateTouchTracking(frame, state: &state)
+        case .releasing(var state):
+            return updateTouchRelease(frame, state: &state)
         case .cancellingUntilRelease:
             resetIfReleased(frame)
         default:
@@ -17,7 +19,7 @@ extension ThreeFingerGestureRecognizer {
         return nil
     }
 
-    private func triggerTouchStartIfNeeded(
+    func triggerTouchStartIfNeeded(
         _ frame: TouchFrame,
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
@@ -35,7 +37,7 @@ extension ThreeFingerGestureRecognizer {
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
         let active = frame.activeTouches
-        if active.isEmpty { return finishTouchOnRelease(frame, state: state) }
+        if active.count < 3 { return beginTouchRelease(frame, state: &state) }
         guard active.count == 3 else {
             phase = .cancellingUntilRelease
             return nil
@@ -49,20 +51,48 @@ extension ThreeFingerGestureRecognizer {
         return triggerLongTouchIfNeeded(frame, state: &state)
     }
 
-    private func finishTouchOnRelease(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> RecognizedGesture? {
-        phase = .idle
+    private func beginTouchRelease(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        state.releaseStartedAt = frame.timestamp
+        let gesture = triggerTouchReleaseIfNeeded(frame, state: &state)
+        phase = frame.activeTouches.isEmpty ? .idle : .releasing(state)
+        return gesture
+    }
+
+    private func updateTouchRelease(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        if frame.activeTouches.isEmpty {
+            phase = .idle
+        } else if canResumeLongTouch(frame, state: state) {
+            var resumed = state
+            resumed.releaseStartedAt = nil
+            phase = .tracking(resumed)
+        } else if frame.activeTouches.count >= 3 {
+            phase = .cancellingUntilRelease
+        } else {
+            phase = .releasing(state)
+        }
+        return nil
+    }
+
+    private func triggerTouchReleaseIfNeeded(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
         guard touchReleaseShouldTrigger(frame, state: state),
               !state.triggered,
               canTrigger(at: frame.timestamp) else { return nil }
+        state.triggered = true
         return recognizedGesture(frame)
     }
 
     private func touchReleaseShouldTrigger(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> Bool {
         if rule.touch.event == .touchEnd { return true }
-        guard rule.touch.event == .longTouch,
-              rule.touch.triggerTiming == .release else {
-            return false
-        }
+        guard rule.touch.event == .longTouch else { return false }
         return frame.timestamp - state.startedAt >= TimeInterval(rule.touch.holdMilliseconds) / 1000
     }
 
@@ -71,12 +101,37 @@ extension ThreeFingerGestureRecognizer {
         state: ThreeFingerTrackingState,
         active: [TouchPoint]
     ) -> Bool {
-        let moved = movedBeyondAnchors(active, anchors: state.anchors, tolerance: rule.touch.movementTolerance)
-        let pressed = rule.touch.cancelOnPress && (state.sawClick || hasPressed(frame, baseline: state.clickBaseline))
+        let moved = touchMovedBeyondTolerance(active, state: state)
+        let pressed = rule.touch.cancelOnPress && touchPressed(frame, state: state)
         return (rule.touch.cancelOnMovement && moved) || pressed
     }
 
-    private func triggerLongTouchIfNeeded(
+    private func canResumeLongTouch(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> Bool {
+        guard rule.touch.event == .longTouch,
+              frame.activeTouches.count == 3,
+              let releaseStartedAt = state.releaseStartedAt,
+              frame.timestamp - releaseStartedAt <= longTouchReleaseResumeWindow,
+              !touchMovedBeyondTolerance(frame.activeTouches, state: state) else { return false }
+        return true
+    }
+
+    private func touchMovedBeyondTolerance(_ active: [TouchPoint], state: ThreeFingerTrackingState) -> Bool {
+        if rule.touch.event == .longTouch,
+           let anchor = state.centroidAnchor,
+           let centroid = NormalizedPoint.centroid(of: active) {
+            return centroid.distance(to: anchor) > effectiveTouchMovementTolerance
+        }
+        return movedBeyondAnchors(active, anchors: state.anchors, tolerance: effectiveTouchMovementTolerance)
+    }
+
+    private func touchPressed(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> Bool {
+        if rule.touch.event == .longTouch {
+            return longTouchPressureCancels(frame)
+        }
+        return state.sawClick || hasPressed(frame, baseline: state.clickBaseline)
+    }
+
+    func triggerLongTouchIfNeeded(
         _ frame: TouchFrame,
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {

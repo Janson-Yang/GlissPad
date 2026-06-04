@@ -78,8 +78,11 @@ public struct AppConfiguration: Codable, Equatable, Sendable {
         case .transform(let id, let type, var rule):
             rule = migrateTransformSensitivity(rule)
             return .transform(id: id, type: type, rule: rule)
+        case .threeFinger(let id, let type, var rule):
+            rule = migrateThreeFingerLongTouch(rule)
+            return .threeFinger(id: id, type: type, rule: rule)
         case .oneFinger, .circle, .shape, .tap, .customPath, .touchStart, .tipTap, .swipe,
-             .multiFingerSwipe, .release, .threeFinger:
+             .multiFingerSwipe, .release:
             return trigger
         }
     }
@@ -140,6 +143,14 @@ public struct AppConfiguration: Codable, Equatable, Sendable {
         if isLegacyValue(rule.minimumRotationDegrees, in: [25, 14]) {
             rule.minimumRotationDegrees = TwoFingerTransformGestureRule.defaultMinimumRotationDegrees
         }
+        return rule
+    }
+
+    private func migrateThreeFingerLongTouch(_ rule: ThreeFingerGestureRule) -> ThreeFingerGestureRule {
+        guard rule.touch.event == .longTouch,
+              isLegacyValue(rule.touch.movementTolerance, in: [0.04]) else { return rule }
+        var rule = rule
+        rule.touch.movementTolerance = 0.08
         return rule
     }
 

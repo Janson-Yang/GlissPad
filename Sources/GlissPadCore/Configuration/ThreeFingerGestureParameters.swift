@@ -47,7 +47,7 @@ public struct ThreeFingerTouchOptions: Codable, Equatable, Sendable {
     public init(
         event: ThreeFingerTouchEvent = .touchStart,
         holdMilliseconds: Int = 500,
-        movementTolerance: Double = 0.04,
+        movementTolerance: Double = 0.08,
         cancelOnMovement: Bool = true,
         cancelOnPress: Bool = true,
         repeatWhileHolding: Bool = false,
@@ -156,4 +156,3 @@ extension ThreeFingerTapOptions {
         try ThreeFingerTouchOptions.validate(milliseconds: milliseconds, name: name, lowerBound: lowerBound)
     }
 }
-
