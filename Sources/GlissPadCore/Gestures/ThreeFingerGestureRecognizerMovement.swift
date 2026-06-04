@@ -7,6 +7,8 @@ extension ThreeFingerGestureRecognizer {
             startTrackingIfPossible(frame, region: rule.common.startRegion ?? rule.common.region)
         case .tracking(var state):
             return updateSwipeTracking(frame, state: &state)
+        case .releasing(var state):
+            return updateSwipeRelease(frame, state: &state)
         case .cancellingUntilRelease:
             resetIfReleased(frame)
         default:
@@ -20,9 +22,7 @@ extension ThreeFingerGestureRecognizer {
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
         let active = frame.activeTouches
-        guard !active.isEmpty else {
-            return finishMovementOnRelease(frame, state: state, timing: rule.swipe.triggerTiming)
-        }
+        if active.count < 3 { return finishSwipeDuringRelease(frame, state: &state) }
         guard active.count == 3, let start = state.samples.first,
               let current = NormalizedPoint.centroid(of: active) else {
             phase = .cancellingUntilRelease
@@ -30,13 +30,31 @@ extension ThreeFingerGestureRecognizer {
         }
         updateClickState(frame, state: &state)
         state.appendSample(from: active)
-        state.completed = state.completed || swipeCompleted(frame: frame, state: state, start: start, current: current)
+        state.completed = state.completed || swipeCompleted(
+            frame: frame,
+            state: state,
+            touches: active,
+            start: start,
+            current: current
+        )
         return triggerMovementIfNeeded(frame, state: &state, timing: rule.swipe.triggerTiming)
+    }
+
+    private func updateSwipeRelease(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        let active = frame.activeTouches
+        guard active.count != 3 else {
+            return updateSwipeTracking(frame, state: &state)
+        }
+        return finishSwipeDuringRelease(frame, state: &state)
     }
 
     private func swipeCompleted(
         frame: TouchFrame,
         state: ThreeFingerTrackingState,
+        touches: [TouchPoint],
         start: NormalizedPoint,
         current: NormalizedPoint
     ) -> Bool {
@@ -46,12 +64,56 @@ extension ThreeFingerGestureRecognizer {
         let duration = max(frame.timestamp - state.startedAt, 0.001)
         return distance >= rule.swipe.minimumTravel
             && distance / duration >= rule.swipe.minimumVelocity
+            && regionContains(rule.common.endRegion, touches: touches)
             && directionMatches(
                 dx: vector.dx,
                 dy: vector.dy,
                 direction: rule.swipe.direction,
                 toleranceDegrees: rule.swipe.directionToleranceDegrees
             )
+    }
+
+    private func finishSwipeDuringRelease(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        completeSwipeFromPartialRelease(frame, state: &state)
+        let gesture = triggerSwipeOnReleaseIfNeeded(frame, state: &state)
+        phase = frame.activeTouches.isEmpty ? .idle : .releasing(state)
+        return gesture
+    }
+
+    private func completeSwipeFromPartialRelease(_ frame: TouchFrame, state: inout ThreeFingerTrackingState) {
+        let touches = releaseCandidateTouches(frame, state: state)
+        guard !touches.isEmpty,
+              let start = state.samples.first,
+              let current = NormalizedPoint.centroid(of: touches) else { return }
+        state.appendSample(from: touches)
+        state.completed = state.completed || swipeCompleted(
+            frame: frame,
+            state: state,
+            touches: touches,
+            start: start,
+            current: current
+        )
+    }
+
+    private func releaseCandidateTouches(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> [TouchPoint] {
+        frame.touches.filter { touch in
+            state.anchors[touch.id] != nil && (touch.state.isTouchingSurface || touch.state == .breakTouch)
+        }
+    }
+
+    private func triggerSwipeOnReleaseIfNeeded(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        guard rule.swipe.triggerTiming != .continuous,
+              state.completed,
+              !state.triggered,
+              canTrigger(at: frame.timestamp) else { return nil }
+        state.triggered = true
+        return recognizedGesture(frame)
     }
 
     private func swipePressModeSatisfied(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> Bool {
@@ -63,35 +125,6 @@ extension ThreeFingerGestureRecognizer {
         case .forceClickHeld:
             return frame.activeTouches.maximumPressure() >= rule.press.forcePressure
         }
-    }
-
-    func processDrawing(_ frame: TouchFrame) -> RecognizedGesture? {
-        switch phase {
-        case .idle, .collecting:
-            startTrackingIfPossible(frame, region: rule.common.startRegion ?? rule.common.region)
-        case .tracking(var state):
-            return updateDrawingTracking(frame, state: &state)
-        case .cancellingUntilRelease:
-            resetIfReleased(frame)
-        default:
-            phase = .idle
-        }
-        return nil
-    }
-
-    private func updateDrawingTracking(
-        _ frame: TouchFrame,
-        state: inout ThreeFingerTrackingState
-    ) -> RecognizedGesture? {
-        let active = frame.activeTouches
-        guard !active.isEmpty else { return finishDrawing(frame, state: state) }
-        guard active.count == 3 else {
-            phase = .cancellingUntilRelease
-            return nil
-        }
-        state.appendSample(from: active)
-        phase = .tracking(state)
-        return nil
     }
 
     func triggerMovementIfNeeded(

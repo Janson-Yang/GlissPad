@@ -1,6 +1,35 @@
 import Foundation
 
 extension ThreeFingerGestureRecognizer {
+    func processDrawing(_ frame: TouchFrame) -> RecognizedGesture? {
+        switch phase {
+        case .idle, .collecting:
+            startTrackingIfPossible(frame, region: rule.common.startRegion ?? rule.common.region)
+        case .tracking(var state):
+            return updateDrawingTracking(frame, state: &state)
+        case .cancellingUntilRelease:
+            resetIfReleased(frame)
+        default:
+            phase = .idle
+        }
+        return nil
+    }
+
+    private func updateDrawingTracking(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        let active = frame.activeTouches
+        guard !active.isEmpty else { return finishDrawing(frame, state: state) }
+        guard active.count == 3 else {
+            phase = .cancellingUntilRelease
+            return nil
+        }
+        state.appendSample(from: active)
+        phase = .tracking(state)
+        return nil
+    }
+
     func finishDrawing(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> RecognizedGesture? {
         phase = .idle
         guard frame.timestamp - state.startedAt <= TimeInterval(rule.drawing.maximumDurationMilliseconds) / 1000,
