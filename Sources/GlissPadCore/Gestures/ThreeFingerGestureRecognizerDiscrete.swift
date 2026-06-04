@@ -3,7 +3,7 @@ import Foundation
 extension ThreeFingerGestureRecognizer {
     func processTouch(_ frame: TouchFrame) -> RecognizedGesture? {
         switch phase {
-        case .idle:
+        case .idle, .collecting:
             startTrackingIfPossible(frame, region: rule.common.region)
             guard case .tracking(var state) = phase else { return nil }
             return triggerTouchStartIfNeeded(frame, state: &state)
@@ -51,8 +51,19 @@ extension ThreeFingerGestureRecognizer {
 
     private func finishTouchOnRelease(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> RecognizedGesture? {
         phase = .idle
-        guard rule.touch.event == .touchEnd, !state.triggered, canTrigger(at: frame.timestamp) else { return nil }
+        guard touchReleaseShouldTrigger(frame, state: state),
+              !state.triggered,
+              canTrigger(at: frame.timestamp) else { return nil }
         return recognizedGesture(frame)
+    }
+
+    private func touchReleaseShouldTrigger(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> Bool {
+        if rule.touch.event == .touchEnd { return true }
+        guard rule.touch.event == .longTouch,
+              rule.touch.triggerTiming == .release else {
+            return false
+        }
+        return frame.timestamp - state.startedAt >= TimeInterval(rule.touch.holdMilliseconds) / 1000
     }
 
     private func touchShouldCancel(
@@ -70,20 +81,43 @@ extension ThreeFingerGestureRecognizer {
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
         guard rule.touch.event == .longTouch,
-              frame.timestamp - state.startedAt >= TimeInterval(rule.touch.holdMilliseconds) / 1000,
-              canTrigger(at: frame.timestamp),
-              rule.touch.repeatWhileHolding || !state.triggered else {
+              rule.touch.triggerTiming != .release,
+              frame.timestamp - state.startedAt >= TimeInterval(rule.touch.holdMilliseconds) / 1000 else {
+            phase = .tracking(state)
+            return nil
+        }
+        if state.triggered {
+            return repeatLongTouchIfNeeded(frame, state: &state)
+        }
+        guard canTrigger(at: frame.timestamp) else {
             phase = .tracking(state)
             return nil
         }
         state.triggered = true
+        state.lastRepeatAt = frame.timestamp
+        phase = .tracking(state)
+        return recognizedGesture(frame)
+    }
+
+    private func repeatLongTouchIfNeeded(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        let interval = TimeInterval(rule.touch.repeatIntervalMilliseconds) / 1000
+        let lastRepeatAt = state.lastRepeatAt ?? state.startedAt
+        guard (rule.touch.repeatWhileHolding || rule.touch.triggerTiming == .continuous),
+              frame.timestamp - lastRepeatAt >= interval else {
+            phase = .tracking(state)
+            return nil
+        }
+        state.lastRepeatAt = frame.timestamp
         phase = .tracking(state)
         return recognizedGesture(frame)
     }
 
     func processTap(_ frame: TouchFrame) -> RecognizedGesture? {
         switch phase {
-        case .idle:
+        case .idle, .collecting:
             startTrackingIfPossible(frame, region: rule.common.region)
         case .tracking(var state):
             return updateTapTracking(frame, state: &state)
@@ -147,4 +181,3 @@ extension ThreeFingerGestureRecognizer {
         if timestamp - pendingTap.timestamp > interval { self.pendingTap = nil }
     }
 }
-

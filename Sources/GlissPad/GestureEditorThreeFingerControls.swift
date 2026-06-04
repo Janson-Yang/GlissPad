@@ -4,6 +4,7 @@ import GlissPadCore
 @MainActor
 final class ThreeFingerGestureControls {
     let touchEventPopup = NSPopUpButton()
+    let touchTimingPopup = NSPopUpButton()
     let pressLevelPopup = NSPopUpButton()
     let pressureBiasPopup = NSPopUpButton()
     let pressTimingPopup = NSPopUpButton()
@@ -15,13 +16,18 @@ final class ThreeFingerGestureControls {
     let tipSwipeActiveFingerPopup = NSPopUpButton()
     let tipSwipeReferencePopup = NSPopUpButton()
     let tipSwipeDirectionPopup = NSPopUpButton()
+    let tipSwipeTimingPopup = NSPopUpButton()
     let scaleDirectionPopup = NSPopUpButton()
+    let scaleTimingPopup = NSPopUpButton()
     let thumbModePopup = NSPopUpButton()
     let drawingPathSourcePopup = NSPopUpButton()
     let drawingRecognitionPopup = NSPopUpButton()
 
     let touchHoldField = FormFactory.textField()
     let touchMovementField = FormFactory.textField()
+    let touchRepeatIntervalField = FormFactory.textField()
+    let commonInitialGapField = FormFactory.textField()
+    let commonStableDurationField = FormFactory.textField()
     let tapCountField = FormFactory.textField()
     let tapDurationField = FormFactory.textField()
     let tapMovementField = FormFactory.textField()
@@ -33,11 +39,13 @@ final class ThreeFingerGestureControls {
     let swipeVelocityField = FormFactory.textField()
     let directionToleranceField = FormFactory.textField()
     let tipTapCountField = FormFactory.textField()
+    let tipTapDurationField = FormFactory.textField()
     let tipTapActiveMovementField = FormFactory.textField()
     let tipTapFixedMovementField = FormFactory.textField()
     let tipTapFixedHoldField = FormFactory.textField()
     let tipSwipeTravelField = FormFactory.textField()
     let tipSwipeVelocityField = FormFactory.textField()
+    let tipSwipeDirectionToleranceField = FormFactory.textField()
     let tipSwipeFixedMovementField = FormFactory.textField()
     let tipSwipeFixedHoldField = FormFactory.textField()
     let scaleDeltaField = FormFactory.textField()
@@ -61,6 +69,7 @@ final class ThreeFingerGestureControls {
 extension GestureEditorWindowController {
     func configureThreeFingerControls() {
         configure(threeFingerControls.touchEventPopup, values: ThreeFingerTouchEvent.allCases)
+        configure(threeFingerControls.touchTimingPopup, values: ThreeFingerTriggerTiming.allCases)
         configure(threeFingerControls.pressLevelPopup, values: ThreeFingerPressLevel.allCases)
         configure(threeFingerControls.pressureBiasPopup, values: ThreeFingerPressureBias.allCases)
         configure(threeFingerControls.pressTimingPopup, values: ThreeFingerPressTriggerTiming.allCases)
@@ -72,7 +81,9 @@ extension GestureEditorWindowController {
         configure(threeFingerControls.tipSwipeActiveFingerPopup, values: ThreeFingerActiveFinger.allCases)
         configure(threeFingerControls.tipSwipeReferencePopup, values: ThreeFingerFingerReference.allCases)
         configure(threeFingerControls.tipSwipeDirectionPopup, values: ThreeFingerDirection.allCases)
+        configure(threeFingerControls.tipSwipeTimingPopup, values: ThreeFingerTriggerTiming.allCases)
         configure(threeFingerControls.scaleDirectionPopup, values: ThreeFingerScaleDirection.allCases)
+        configure(threeFingerControls.scaleTimingPopup, values: ThreeFingerTriggerTiming.allCases)
         configure(threeFingerControls.thumbModePopup, values: ThreeFingerThumbDetectionMode.allCases)
         configure(threeFingerControls.drawingPathSourcePopup, values: ThreeFingerDrawingPathSource.allCases)
         configure(threeFingerControls.drawingRecognitionPopup, values: ThreeFingerDrawingRecognitionMode.allCases)
@@ -121,4 +132,3 @@ extension ThreeFingerScaleDirection: DisplayNamed {}
 extension ThreeFingerThumbDetectionMode: DisplayNamed {}
 extension ThreeFingerDrawingPathSource: DisplayNamed {}
 extension ThreeFingerDrawingRecognitionMode: DisplayNamed {}
-

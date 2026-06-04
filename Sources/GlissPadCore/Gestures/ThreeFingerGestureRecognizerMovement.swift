@@ -3,7 +3,7 @@ import Foundation
 extension ThreeFingerGestureRecognizer {
     func processSwipe(_ frame: TouchFrame) -> RecognizedGesture? {
         switch phase {
-        case .idle:
+        case .idle, .collecting:
             startTrackingIfPossible(frame, region: rule.common.startRegion ?? rule.common.region)
         case .tracking(var state):
             return updateSwipeTracking(frame, state: &state)
@@ -65,54 +65,9 @@ extension ThreeFingerGestureRecognizer {
         }
     }
 
-    func processScale(_ frame: TouchFrame) -> RecognizedGesture? {
-        switch phase {
-        case .idle:
-            startTrackingIfPossible(frame, region: rule.common.region)
-        case .tracking(var state):
-            return updateScaleTracking(frame, state: &state)
-        case .cancellingUntilRelease:
-            resetIfReleased(frame)
-        default:
-            phase = .idle
-        }
-        return nil
-    }
-
-    private func updateScaleTracking(
-        _ frame: TouchFrame,
-        state: inout ThreeFingerTrackingState
-    ) -> RecognizedGesture? {
-        let active = frame.activeTouches
-        guard !active.isEmpty else {
-            return finishMovementOnRelease(frame, state: state, timing: rule.scale.triggerTiming)
-        }
-        guard active.count == 3 else {
-            phase = .cancellingUntilRelease
-            return nil
-        }
-        state.completed = state.completed || scaleCompleted(frame: frame, state: state, touches: active)
-        return triggerMovementIfNeeded(frame, state: &state, timing: rule.scale.triggerTiming)
-    }
-
-    private func scaleCompleted(frame: TouchFrame, state: ThreeFingerTrackingState, touches: [TouchPoint]) -> Bool {
-        let initial = max(state.startTouches.averagePairwiseDistance(), 0.001)
-        let delta = touches.averagePairwiseDistance() / initial - 1
-        let duration = max(frame.timestamp - state.startedAt, 0.001)
-        guard abs(delta) / duration >= rule.scale.minimumScaleVelocity else { return false }
-        switch rule.scale.direction {
-        case .pinchIn:
-            return delta <= -rule.scale.minimumScaleDelta
-        case .spreadOut:
-            return delta >= rule.scale.minimumScaleDelta
-        case .any:
-            return abs(delta) >= rule.scale.minimumScaleDelta
-        }
-    }
-
     func processDrawing(_ frame: TouchFrame) -> RecognizedGesture? {
         switch phase {
-        case .idle:
+        case .idle, .collecting:
             startTrackingIfPossible(frame, region: rule.common.startRegion ?? rule.common.region)
         case .tracking(var state):
             return updateDrawingTracking(frame, state: &state)
@@ -139,17 +94,29 @@ extension ThreeFingerGestureRecognizer {
         return nil
     }
 
-    private func triggerMovementIfNeeded(
+    func triggerMovementIfNeeded(
         _ frame: TouchFrame,
         state: inout ThreeFingerTrackingState,
         timing: ThreeFingerTriggerTiming
     ) -> RecognizedGesture? {
-        guard state.completed, !state.triggered, canTrigger(at: frame.timestamp) else {
+        guard state.completed else {
             phase = .tracking(state)
             return nil
         }
         switch timing {
-        case .thresholdReached, .continuous:
+        case .thresholdReached:
+            guard !state.triggered, canTrigger(at: frame.timestamp) else {
+                phase = .tracking(state)
+                return nil
+            }
+            state.triggered = true
+            phase = .tracking(state)
+            return recognizedGesture(frame)
+        case .continuous:
+            guard canTrigger(at: frame.timestamp) else {
+                phase = .tracking(state)
+                return nil
+            }
             state.triggered = true
             phase = .tracking(state)
             return recognizedGesture(frame)
@@ -159,7 +126,7 @@ extension ThreeFingerGestureRecognizer {
         }
     }
 
-    private func finishMovementOnRelease(
+    func finishMovementOnRelease(
         _ frame: TouchFrame,
         state: ThreeFingerTrackingState,
         timing: ThreeFingerTriggerTiming

@@ -10,6 +10,7 @@ struct ThreeFingerTrackingState: Equatable {
     var sawClick: Bool
     var completed = false
     var triggered = false
+    var lastRepeatAt: TimeInterval?
 
     init(frame: TouchFrame, touches: [TouchPoint]) {
         anchors = Dictionary(uniqueKeysWithValues: touches.map { ($0.id, $0.position) })
@@ -27,6 +28,16 @@ struct ThreeFingerTrackingState: Equatable {
             samples.append(centroid)
         }
         lastTouches = touches
+    }
+}
+
+struct ThreeFingerCollectionState: Equatable {
+    var startedAt: TimeInterval
+    var threeFingerStartedAt: TimeInterval?
+
+    init(startedAt: TimeInterval, threeFingerStartedAt: TimeInterval? = nil) {
+        self.startedAt = startedAt
+        self.threeFingerStartedAt = threeFingerStartedAt
     }
 }
 
@@ -52,6 +63,7 @@ struct ThreeFingerPendingTap: Equatable {
 
 enum ThreeFingerRecognitionPhase: Equatable {
     case idle
+    case collecting(ThreeFingerCollectionState)
     case tracking(ThreeFingerTrackingState)
     case tipBase(ThreeFingerTipBase)
     case tip(ThreeFingerTipState)

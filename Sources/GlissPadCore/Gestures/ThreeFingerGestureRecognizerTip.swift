@@ -98,11 +98,33 @@ extension ThreeFingerGestureRecognizer {
 
     private func finishTipTap(_ frame: TouchFrame, state: ThreeFingerTipState) -> RecognizedGesture? {
         phase = .tipBase(state.base)
-        guard frame.timestamp - state.startedAt <= TimeInterval(rule.tipTap.maximumTapMilliseconds) / 1000,
-              canTrigger(at: frame.timestamp) else {
+        guard frame.timestamp - state.startedAt <= TimeInterval(rule.tipTap.maximumTapMilliseconds) / 1000 else {
             return nil
         }
-        return recognizedGesture(frame)
+        return recordTipTap(frame, anchor: state.activeAnchor)
+    }
+
+    private func recordTipTap(_ frame: TouchFrame, anchor: NormalizedPoint) -> RecognizedGesture? {
+        guard rule.tipTap.tapCount > 1 else {
+            return canTrigger(at: frame.timestamp) ? recognizedGesture(frame) : nil
+        }
+        let previous = pendingTap
+        let nextCount = validPendingTipTap(previous, frame: frame, anchor: anchor) ? previous!.count + 1 : 1
+        pendingTap = ThreeFingerPendingTap(count: nextCount, timestamp: frame.timestamp, anchor: anchor)
+        guard nextCount >= rule.tipTap.tapCount else { return nil }
+        pendingTap = nil
+        return canTrigger(at: frame.timestamp) ? recognizedGesture(frame) : nil
+    }
+
+    private func validPendingTipTap(
+        _ pending: ThreeFingerPendingTap?,
+        frame: TouchFrame,
+        anchor: NormalizedPoint
+    ) -> Bool {
+        guard let pending else { return false }
+        let interval = TimeInterval(rule.tap.maximumInterTapIntervalMilliseconds) / 1000
+        return frame.timestamp - pending.timestamp <= interval
+            && pending.anchor.distance(to: anchor) <= rule.tipTap.maximumActiveFingerMovement
     }
 
     private func updateTipSwipe(

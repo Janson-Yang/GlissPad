@@ -16,15 +16,53 @@ extension ThreeFingerGestureRecognizer {
     private func drawingTemplateMatches(_ samples: [NormalizedPoint]) -> Bool {
         switch rule.drawing.recognitionMode {
         case .templateMatch:
-            let tolerance = max(0.02, (1 - rule.drawing.scoreThreshold) * 0.32)
-            return RelativePathMatcher(
-                template: rule.drawing.template.points,
-                tolerance: tolerance,
-                sampleCount: rule.drawing.resamplePointCount
-            ).matches(samples)
+            return templateMatch(samples)
         case .directionSequence:
             return directionSequenceMatches(samples)
         }
+    }
+
+    private func templateMatch(_ samples: [NormalizedPoint]) -> Bool {
+        let tolerance = max(0.02, (1 - rule.drawing.scoreThreshold) * 0.32)
+        let observed = rule.drawing.normalizeRotation
+            ? rotationAligned(samples, template: rule.drawing.template.points)
+            : samples
+        guard rule.drawing.normalizeScale else {
+            return FreeformPathMatcher(
+                template: rule.drawing.template.points,
+                tolerance: tolerance,
+                sampleCount: rule.drawing.resamplePointCount
+            ).matches(observed)
+        }
+        return RelativePathMatcher(
+            template: rule.drawing.template.points,
+            tolerance: tolerance,
+            sampleCount: rule.drawing.resamplePointCount
+        ).matches(observed)
+    }
+
+    private func rotationAligned(_ samples: [NormalizedPoint], template: [NormalizedPoint]) -> [NormalizedPoint] {
+        guard let sampleAngle = endpointAngle(samples), let templateAngle = endpointAngle(template) else { return samples }
+        let delta = templateAngle - sampleAngle
+        let origin = samples[0]
+        return samples.map { rotate($0, around: origin, radians: delta) }
+    }
+
+    private func endpointAngle(_ points: [NormalizedPoint]) -> Double? {
+        guard let first = points.first, let last = points.last else { return nil }
+        let dx = last.x - first.x
+        let dy = last.y - first.y
+        guard hypot(dx, dy) >= 0.03 else { return nil }
+        return atan2(dy, dx)
+    }
+
+    private func rotate(_ point: NormalizedPoint, around origin: NormalizedPoint, radians: Double) -> NormalizedPoint {
+        let dx = point.x - origin.x
+        let dy = point.y - origin.y
+        return NormalizedPoint(
+            x: origin.x + dx * cos(radians) - dy * sin(radians),
+            y: origin.y + dx * sin(radians) + dy * cos(radians)
+        )
     }
 
     private func directionSequenceMatches(_ samples: [NormalizedPoint]) -> Bool {
@@ -54,4 +92,3 @@ extension ThreeFingerGestureRecognizer {
         return dy >= 0 ? .down : .up
     }
 }
-

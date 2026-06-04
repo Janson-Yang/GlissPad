@@ -44,7 +44,31 @@ final class ThreeFingerGestureRecognizer {
 
     func startTrackingIfPossible(_ frame: TouchFrame, region: NormalizedRegion?) {
         let active = frame.activeTouches
-        guard active.count == 3, regionContains(region, touches: active) else { return }
+        guard !active.isEmpty else {
+            phase = .idle
+            return
+        }
+        let collection = currentCollection(frame: frame)
+        guard frame.timestamp - collection.startedAt <= commonTimeGap else {
+            phase = .cancellingUntilRelease
+            return
+        }
+        guard active.count == 3 else {
+            phase = .collecting(collection)
+            return
+        }
+        guard regionContains(region, touches: active) else {
+            phase = .cancellingUntilRelease
+            return
+        }
+        let stableSince = collection.threeFingerStartedAt ?? frame.timestamp
+        guard frame.timestamp - stableSince >= stableFingerDuration else {
+            phase = .collecting(ThreeFingerCollectionState(
+                startedAt: collection.startedAt,
+                threeFingerStartedAt: stableSince
+            ))
+            return
+        }
         phase = .tracking(ThreeFingerTrackingState(frame: frame, touches: active))
     }
 
@@ -65,6 +89,21 @@ final class ThreeFingerGestureRecognizer {
     func reset() {
         phase = .idle
         pendingTap = nil
+    }
+
+    private var commonTimeGap: TimeInterval {
+        TimeInterval(rule.common.maxInitialFingerTimeGapMilliseconds) / 1000
+    }
+
+    private var stableFingerDuration: TimeInterval {
+        TimeInterval(rule.common.minStableFingerCountDurationMilliseconds) / 1000
+    }
+
+    private func currentCollection(frame: TouchFrame) -> ThreeFingerCollectionState {
+        if case .collecting(let collection) = phase {
+            return collection
+        }
+        return ThreeFingerCollectionState(startedAt: frame.timestamp)
     }
 
     func regionContains(_ region: NormalizedRegion?, touches: [TouchPoint]) -> Bool {
@@ -117,4 +156,3 @@ final class ThreeFingerGestureRecognizer {
         return raw > 180 ? 360 - raw : raw
     }
 }
-

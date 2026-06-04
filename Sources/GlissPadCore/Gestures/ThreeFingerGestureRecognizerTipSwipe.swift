@@ -23,12 +23,24 @@ extension ThreeFingerGestureRecognizer {
         _ frame: TouchFrame,
         state: inout ThreeFingerTipState
     ) -> RecognizedGesture? {
-        guard state.completed, !state.triggered, canTrigger(at: frame.timestamp) else {
+        guard state.completed else {
             phase = .tip(state)
             return nil
         }
         switch rule.tipSwipe.triggerTiming {
-        case .thresholdReached, .continuous:
+        case .thresholdReached:
+            guard !state.triggered, canTrigger(at: frame.timestamp) else {
+                phase = .tip(state)
+                return nil
+            }
+            state.triggered = true
+            phase = .tip(state)
+            return recognizedGesture(frame)
+        case .continuous:
+            guard canTrigger(at: frame.timestamp) else {
+                phase = .tip(state)
+                return nil
+            }
             state.triggered = true
             phase = .tip(state)
             return recognizedGesture(frame)
@@ -49,4 +61,3 @@ extension ThreeFingerGestureRecognizer {
         return recognizedGesture(frame)
     }
 }
-

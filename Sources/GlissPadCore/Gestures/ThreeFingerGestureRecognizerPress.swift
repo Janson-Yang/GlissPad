@@ -3,7 +3,7 @@ import Foundation
 extension ThreeFingerGestureRecognizer {
     func processPress(_ frame: TouchFrame) -> RecognizedGesture? {
         switch phase {
-        case .idle:
+        case .idle, .collecting:
             startTrackingIfPossible(frame, region: rule.common.region)
         case .tracking(var state):
             return updatePressTracking(frame, state: &state)
@@ -88,4 +88,3 @@ extension ThreeFingerGestureRecognizer {
             && others.allSatisfy { ratios[index] - ratios[$0] >= rule.press.pressureBiasThreshold }
     }
 }
-

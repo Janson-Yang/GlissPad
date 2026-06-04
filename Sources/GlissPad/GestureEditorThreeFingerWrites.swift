@@ -33,7 +33,15 @@ extension GestureEditorWindowController {
             movementTolerance: try doubleValue(threeFingerControls.touchMovementField, name: "movement tolerance"),
             cancelOnMovement: threeFingerControls.cancelOnMovementButton.state == .on,
             cancelOnPress: threeFingerControls.cancelOnPressButton.state == .on,
-            repeatWhileHolding: threeFingerControls.repeatWhileHoldingButton.state == .on
+            repeatWhileHolding: threeFingerControls.repeatWhileHoldingButton.state == .on,
+            repeatIntervalMilliseconds: try intValue(
+                threeFingerControls.touchRepeatIntervalField,
+                name: "repeat interval"
+            ),
+            triggerTiming: try selected(
+                threeFingerControls.touchTimingPopup,
+                values: ThreeFingerTriggerTiming.allCases
+            )
         )
     }
 
@@ -75,6 +83,7 @@ extension GestureEditorWindowController {
             tapPosition: try selected(threeFingerControls.tipTapPositionPopup, values: ThreeFingerPosition.allCases),
             positionReference: try selected(threeFingerControls.tipTapReferencePopup, values: ThreeFingerFingerReference.allCases),
             tapCount: try intValue(threeFingerControls.tipTapCountField, name: "tip tap count"),
+            maximumTapMilliseconds: try intValue(threeFingerControls.tipTapDurationField, name: "tip tap duration"),
             maximumActiveFingerMovement: try doubleValue(threeFingerControls.tipTapActiveMovementField, name: "active movement"),
             maximumFixedFingerMovement: try doubleValue(threeFingerControls.tipTapFixedMovementField, name: "fixed movement"),
             minimumFixedFingerHoldMilliseconds: try intValue(threeFingerControls.tipTapFixedHoldField, name: "fixed hold")
@@ -88,8 +97,16 @@ extension GestureEditorWindowController {
             direction: try selected(threeFingerControls.tipSwipeDirectionPopup, values: ThreeFingerDirection.allCases),
             minimumTravel: try doubleValue(threeFingerControls.tipSwipeTravelField, name: "tip swipe travel"),
             minimumVelocity: try doubleValue(threeFingerControls.tipSwipeVelocityField, name: "tip swipe velocity"),
+            directionToleranceDegrees: try doubleValue(
+                threeFingerControls.tipSwipeDirectionToleranceField,
+                name: "tip swipe direction tolerance"
+            ),
             maximumFixedFingerMovement: try doubleValue(threeFingerControls.tipSwipeFixedMovementField, name: "fixed movement"),
-            minimumFixedFingerHoldMilliseconds: try intValue(threeFingerControls.tipSwipeFixedHoldField, name: "fixed hold")
+            minimumFixedFingerHoldMilliseconds: try intValue(threeFingerControls.tipSwipeFixedHoldField, name: "fixed hold"),
+            triggerTiming: try selected(
+                threeFingerControls.tipSwipeTimingPopup,
+                values: ThreeFingerTriggerTiming.allCases
+            )
         )
     }
 
@@ -98,7 +115,7 @@ extension GestureEditorWindowController {
             direction: try selected(threeFingerControls.scaleDirectionPopup, values: ThreeFingerScaleDirection.allCases),
             minimumScaleDelta: try doubleValue(threeFingerControls.scaleDeltaField, name: "scale delta"),
             minimumScaleVelocity: try doubleValue(threeFingerControls.scaleVelocityField, name: "scale velocity"),
-            triggerTiming: try selected(threeFingerControls.triggerTimingPopup, values: ThreeFingerTriggerTiming.allCases),
+            triggerTiming: try selected(threeFingerControls.scaleTimingPopup, values: ThreeFingerTriggerTiming.allCases),
             thumbDetectionMode: try selected(threeFingerControls.thumbModePopup, values: ThreeFingerThumbDetectionMode.allCases)
         )
     }
@@ -121,4 +138,3 @@ extension GestureEditorWindowController {
         )
     }
 }
-

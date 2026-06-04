@@ -7,8 +7,10 @@ extension GestureEditorWindowController {
         cooldownField.stringValue = "\(rule.cooldownMilliseconds)"
         loadThreeFingerCommon(rule.common)
         select(threeFingerControls.touchEventPopup, value: rule.touch.event)
+        select(threeFingerControls.touchTimingPopup, value: rule.touch.triggerTiming)
         threeFingerControls.touchHoldField.stringValue = "\(rule.touch.holdMilliseconds)"
         threeFingerControls.touchMovementField.stringValue = "\(rule.touch.movementTolerance)"
+        threeFingerControls.touchRepeatIntervalField.stringValue = "\(rule.touch.repeatIntervalMilliseconds)"
         threeFingerControls.cancelOnMovementButton.state = rule.touch.cancelOnMovement ? .on : .off
         threeFingerControls.cancelOnPressButton.state = rule.touch.cancelOnPress ? .on : .off
         threeFingerControls.repeatWhileHoldingButton.state = rule.touch.repeatWhileHolding ? .on : .off
@@ -32,6 +34,8 @@ extension GestureEditorWindowController {
     private func loadThreeFingerCommon(_ common: ThreeFingerCommonOptions) {
         loadRegionForThreeFinger(common.region)
         loadSwipeRegions(start: common.startRegion, end: common.endRegion)
+        threeFingerControls.commonInitialGapField.stringValue = "\(common.maxInitialFingerTimeGapMilliseconds)"
+        threeFingerControls.commonStableDurationField.stringValue = "\(common.minStableFingerCountDurationMilliseconds)"
     }
 
     private func loadThreeFingerTap(_ tap: ThreeFingerTapOptions) {
@@ -64,18 +68,22 @@ extension GestureEditorWindowController {
         select(threeFingerControls.tipSwipeActiveFingerPopup, value: rule.tipSwipe.activeFinger)
         select(threeFingerControls.tipSwipeReferencePopup, value: rule.tipSwipe.activeFingerReference)
         select(threeFingerControls.tipSwipeDirectionPopup, value: rule.tipSwipe.direction)
+        select(threeFingerControls.tipSwipeTimingPopup, value: rule.tipSwipe.triggerTiming)
         select(threeFingerControls.scaleDirectionPopup, value: rule.scale.direction)
+        select(threeFingerControls.scaleTimingPopup, value: rule.scale.triggerTiming)
         select(threeFingerControls.thumbModePopup, value: rule.scale.thumbDetectionMode)
         loadThreeFingerMovementFields(rule)
     }
 
     private func loadThreeFingerMovementFields(_ rule: ThreeFingerGestureRule) {
         threeFingerControls.tipTapCountField.stringValue = "\(rule.tipTap.tapCount)"
+        threeFingerControls.tipTapDurationField.stringValue = "\(rule.tipTap.maximumTapMilliseconds)"
         threeFingerControls.tipTapActiveMovementField.stringValue = "\(rule.tipTap.maximumActiveFingerMovement)"
         threeFingerControls.tipTapFixedMovementField.stringValue = "\(rule.tipTap.maximumFixedFingerMovement)"
         threeFingerControls.tipTapFixedHoldField.stringValue = "\(rule.tipTap.minimumFixedFingerHoldMilliseconds)"
         threeFingerControls.tipSwipeTravelField.stringValue = "\(rule.tipSwipe.minimumTravel)"
         threeFingerControls.tipSwipeVelocityField.stringValue = "\(rule.tipSwipe.minimumVelocity)"
+        threeFingerControls.tipSwipeDirectionToleranceField.stringValue = "\(rule.tipSwipe.directionToleranceDegrees)"
         threeFingerControls.tipSwipeFixedMovementField.stringValue = "\(rule.tipSwipe.maximumFixedFingerMovement)"
         threeFingerControls.tipSwipeFixedHoldField.stringValue = "\(rule.tipSwipe.minimumFixedFingerHoldMilliseconds)"
         threeFingerControls.scaleDeltaField.stringValue = "\(rule.scale.minimumScaleDelta)"
@@ -99,7 +107,15 @@ extension GestureEditorWindowController {
         ThreeFingerCommonOptions(
             region: try visibleRegion(),
             startRegion: type == .threeFingerSwipe || type == .threeFingerDrawing ? try visibleSwipeStartRegion() : nil,
-            endRegion: type == .threeFingerSwipe || type == .threeFingerDrawing ? try visibleSwipeEndRegion() : nil
+            endRegion: type == .threeFingerSwipe || type == .threeFingerDrawing ? try visibleSwipeEndRegion() : nil,
+            maxInitialFingerTimeGapMilliseconds: try intValue(
+                threeFingerControls.commonInitialGapField,
+                name: "initial finger gap"
+            ),
+            minStableFingerCountDurationMilliseconds: try intValue(
+                threeFingerControls.commonStableDurationField,
+                name: "stable finger duration"
+            )
         )
     }
 
@@ -108,4 +124,3 @@ extension GestureEditorWindowController {
         regionSelectionView.region = region ?? NormalizedRegion(minX: 0, maxX: 1, minY: 0, maxY: 1)
     }
 }
-

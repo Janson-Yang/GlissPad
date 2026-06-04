@@ -10,6 +10,7 @@ extension GestureEditorWindowController {
         ]
         views.append(contentsOf: threeFingerRows(for: type))
         views.append(triggerFormRow("Cooldown ms", cooldownField))
+        views.append(contentsOf: threeFingerCommonRows())
         views.append(contentsOf: threeFingerRegionRows(for: type))
         views.append(inspectorButtonRow(saveParametersButton(), deleteTriggerButton()))
         return triggerParameterPanel(title: "\(type.displayName) Configuration", views: views)
@@ -20,8 +21,10 @@ extension GestureEditorWindowController {
         case .threeFingerTouch:
             return [
                 triggerFormRow("Touch event", threeFingerControls.touchEventPopup, controlWidth: 180),
+                triggerFormRow("Trigger timing", threeFingerControls.touchTimingPopup, controlWidth: 180),
                 triggerFormRow("Hold duration ms", threeFingerControls.touchHoldField),
                 triggerFormRow("Movement tolerance", threeFingerControls.touchMovementField),
+                triggerFormRow("Repeat interval ms", threeFingerControls.touchRepeatIntervalField),
                 triggerIndented(threeFingerControls.cancelOnMovementButton),
                 triggerIndented(threeFingerControls.cancelOnPressButton),
                 triggerIndented(threeFingerControls.repeatWhileHoldingButton)
@@ -79,6 +82,7 @@ extension GestureEditorWindowController {
             triggerFormRow("Tap finger", threeFingerControls.tipTapPositionPopup, controlWidth: 180),
             triggerFormRow("Position reference", threeFingerControls.tipTapReferencePopup, controlWidth: 180),
             triggerFormRow("Tap count", threeFingerControls.tipTapCountField),
+            triggerFormRow("Maximum tap ms", threeFingerControls.tipTapDurationField),
             triggerFormRow("Active movement", threeFingerControls.tipTapActiveMovementField),
             triggerFormRow("Fixed movement", threeFingerControls.tipTapFixedMovementField),
             triggerFormRow("Fixed hold ms", threeFingerControls.tipTapFixedHoldField)
@@ -90,8 +94,10 @@ extension GestureEditorWindowController {
             triggerFormRow("Active finger", threeFingerControls.tipSwipeActiveFingerPopup, controlWidth: 180),
             triggerFormRow("Finger reference", threeFingerControls.tipSwipeReferencePopup, controlWidth: 180),
             triggerFormRow("Direction", threeFingerControls.tipSwipeDirectionPopup, controlWidth: 180),
+            triggerFormRow("Trigger timing", threeFingerControls.tipSwipeTimingPopup, controlWidth: 180),
             triggerFormRow("Minimum travel", threeFingerControls.tipSwipeTravelField),
             triggerFormRow("Minimum velocity", threeFingerControls.tipSwipeVelocityField),
+            triggerFormRow("Direction tolerance", threeFingerControls.tipSwipeDirectionToleranceField),
             triggerFormRow("Fixed movement", threeFingerControls.tipSwipeFixedMovementField),
             triggerFormRow("Fixed hold ms", threeFingerControls.tipSwipeFixedHoldField)
         ]
@@ -100,7 +106,7 @@ extension GestureEditorWindowController {
     private func threeFingerScaleRows() -> [NSView] {
         [
             triggerFormRow("Scale direction", threeFingerControls.scaleDirectionPopup, controlWidth: 180),
-            triggerFormRow("Trigger timing", threeFingerControls.triggerTimingPopup, controlWidth: 180),
+            triggerFormRow("Trigger timing", threeFingerControls.scaleTimingPopup, controlWidth: 180),
             triggerFormRow("Thumb detection", threeFingerControls.thumbModePopup, controlWidth: 220),
             triggerFormRow("Minimum delta", threeFingerControls.scaleDeltaField),
             triggerFormRow("Minimum velocity", threeFingerControls.scaleVelocityField)
@@ -129,5 +135,12 @@ extension GestureEditorWindowController {
         default:
             return [makeRegionEditor(labelWidth: triggerFormLabelWidth)]
         }
+    }
+
+    private func threeFingerCommonRows() -> [NSView] {
+        [
+            triggerFormRow("Initial finger gap ms", threeFingerControls.commonInitialGapField),
+            triggerFormRow("Stable count ms", threeFingerControls.commonStableDurationField)
+        ]
     }
 }
