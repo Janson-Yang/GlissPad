@@ -27,6 +27,14 @@ public enum GestureTriggerType: String, CaseIterable, Codable, Equatable, Sendab
     case twoFingerHold
     case upperRightForcePress
     case releaseLastFinger
+    case threeFingerTouch
+    case threeFingerTap
+    case threeFingerPress
+    case threeFingerSwipe
+    case threeFingerTipTap
+    case threeFingerTipSwipe
+    case thumbTwoFingerScale
+    case threeFingerDrawing
 
     public var displayName: String {
         switch self {
@@ -56,6 +64,14 @@ public enum GestureTriggerType: String, CaseIterable, Codable, Equatable, Sendab
         case .twoFingerHold: return "2 Finger Long Press"
         case .upperRightForcePress: return "Top Right Click"
         case .releaseLastFinger: return "Release Last Finger"
+        case .threeFingerTouch: return "Three Finger Touch"
+        case .threeFingerTap: return "Three Finger Tap"
+        case .threeFingerPress: return "Three Finger Press"
+        case .threeFingerSwipe: return "Three Finger Swipe"
+        case .threeFingerTipTap: return "Three Finger TipTap"
+        case .threeFingerTipSwipe: return "Three Finger TipSwipe"
+        case .thumbTwoFingerScale: return "Thumb + Two Fingers Pinch / Spread"
+        case .threeFingerDrawing: return "Three Finger Drawing"
         }
     }
 

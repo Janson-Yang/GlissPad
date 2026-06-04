@@ -49,6 +49,9 @@ public extension GestureTriggerType {
             return .press(id: id, type: self, rule: defaultUpperRightRule(ordinal: ordinal))
         case .releaseLastFinger:
             return .release(id: id, type: self, rule: defaultReleaseRule(ordinal: ordinal))
+        case .threeFingerTouch, .threeFingerTap, .threeFingerPress, .threeFingerSwipe,
+             .threeFingerTipTap, .threeFingerTipSwipe, .thumbTwoFingerScale, .threeFingerDrawing:
+            return defaultThreeFingerTrigger(id: id, ordinal: ordinal)
         }
     }
 }

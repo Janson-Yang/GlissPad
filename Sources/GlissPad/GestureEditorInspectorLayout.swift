@@ -79,6 +79,9 @@ extension GestureEditorWindowController {
             return makeReleaseConfigPanel()
         case .threeFingerForcePress, .upperLeftForcePress, .upperRightForcePress:
             return makeTriggerConfigPanel()
+        case .threeFingerTouch, .threeFingerTap, .threeFingerPress, .threeFingerSwipe,
+             .threeFingerTipTap, .threeFingerTipSwipe, .thumbTwoFingerScale, .threeFingerDrawing:
+            return makeThreeFingerConfigPanel(type: trigger.type)
         }
     }
 

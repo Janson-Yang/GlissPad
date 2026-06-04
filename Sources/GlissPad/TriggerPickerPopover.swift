@@ -53,7 +53,11 @@ private final class TriggerPickerViewController: NSViewController {
     }
 
     private func showRoot() {
-        let buttons = [oneFingerCategoryButton(), twoFingerCategoryButton()] + rootTriggerButtons()
+        let buttons = [
+            oneFingerCategoryButton(),
+            twoFingerCategoryButton(),
+            threeFingerCategoryButton()
+        ] + rootTriggerButtons()
         replaceStack(with: [title("Add Trigger")] + buttons, buttonCount: buttons.count)
     }
 
@@ -67,6 +71,12 @@ private final class TriggerPickerViewController: NSViewController {
         let back = backButton()
         let triggerButtons = twoFingerTriggerButtons()
         replaceStack(with: [back, title("Two Finger Gestures")] + triggerButtons, buttonCount: triggerButtons.count + 1)
+    }
+
+    @objc private func showThreeFingerGestures() {
+        let back = backButton()
+        let triggerButtons = threeFingerTriggerButtons()
+        replaceStack(with: [back, title("Three Finger Gestures")] + triggerButtons, buttonCount: triggerButtons.count + 1)
     }
 
     @objc private func goBack() {
@@ -92,6 +102,7 @@ private final class TriggerPickerViewController: NSViewController {
         GestureTriggerType.allCases
             .filter { !Self.oneFingerTypes.contains($0) }
             .filter { !Self.twoFingerTypes.contains($0) }
+            .filter { !Self.threeFingerTypes.contains($0) }
             .filter { !Self.hiddenTypes.contains($0) }
             .map(triggerButton)
     }
@@ -102,6 +113,10 @@ private final class TriggerPickerViewController: NSViewController {
 
     private func twoFingerTriggerButtons() -> [NSButton] {
         Self.twoFingerTypes.map(triggerButton)
+    }
+
+    private func threeFingerTriggerButtons() -> [NSButton] {
+        Self.threeFingerTypes.map(triggerButton)
     }
 
     private func oneFingerCategoryButton() -> NSButton {
@@ -122,6 +137,16 @@ private final class TriggerPickerViewController: NSViewController {
             accessorySymbolName: "line.3.horizontal",
             target: self,
             action: #selector(showTwoFingerGestures)
+        )
+    }
+
+    private func threeFingerCategoryButton() -> NSButton {
+        pickerButton(
+            title: "Three Finger Gestures",
+            symbolName: "hand.raised.fingers.spread.fill",
+            accessorySymbolName: "line.3.horizontal",
+            target: self,
+            action: #selector(showThreeFingerGestures)
         )
     }
 
@@ -189,6 +214,17 @@ private final class TriggerPickerViewController: NSViewController {
         .rotateRight,
         .freeformTwoFingerSwipe,
         .regionTwoFingerSwipe
+    ]
+
+    private static let threeFingerTypes: [GestureTriggerType] = [
+        .threeFingerTouch,
+        .threeFingerTap,
+        .threeFingerPress,
+        .threeFingerSwipe,
+        .threeFingerTipTap,
+        .threeFingerTipSwipe,
+        .thumbTwoFingerScale,
+        .threeFingerDrawing
     ]
 
     private static let hiddenTypes: [GestureTriggerType] = [

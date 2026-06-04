@@ -63,6 +63,8 @@ extension GestureEditorWindowController {
             try writeReleaseRule()
         case .press?:
             try writePressRule()
+        case .threeFinger?:
+            try writeThreeFingerRule()
         case nil:
             return
         }

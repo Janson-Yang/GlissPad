@@ -79,7 +79,7 @@ public struct AppConfiguration: Codable, Equatable, Sendable {
             rule = migrateTransformSensitivity(rule)
             return .transform(id: id, type: type, rule: rule)
         case .oneFinger, .circle, .shape, .tap, .customPath, .touchStart, .tipTap, .swipe,
-             .multiFingerSwipe, .release:
+             .multiFingerSwipe, .release, .threeFinger:
             return trigger
         }
     }

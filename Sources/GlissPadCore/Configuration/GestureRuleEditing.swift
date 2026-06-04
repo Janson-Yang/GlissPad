@@ -22,6 +22,7 @@ public extension GestureRule {
         case .swipe(_, _, let rule): return rule.actions
         case .hold(_, _, let rule): return rule.actions
         case .release(_, _, let rule): return rule.actions
+        case .threeFinger(_, _, let rule): return rule.actions
         }
     }
 
@@ -72,6 +73,9 @@ public extension GestureRule {
         case .release(let id, let type, var rule):
             rule.actions = actions
             return .release(id: id, type: type, rule: rule)
+        case .threeFinger(let id, let type, var rule):
+            rule.actions = actions
+            return .threeFinger(id: id, type: type, rule: rule)
         }
     }
 
@@ -122,6 +126,9 @@ public extension GestureRule {
         case .release(let id, let type, var rule):
             rule.name = name
             return .release(id: id, type: type, rule: rule)
+        case .threeFinger(let id, let type, var rule):
+            rule.name = name
+            return .threeFinger(id: id, type: type, rule: rule)
         }
     }
 
@@ -157,6 +164,8 @@ public extension GestureRule {
             return .hold(id: id, type: type, rule: rule)
         case .release(_, let type, let rule):
             return .release(id: id, type: type, rule: rule)
+        case .threeFinger(_, let type, let rule):
+            return .threeFinger(id: id, type: type, rule: rule)
         }
     }
 }
@@ -179,6 +188,7 @@ private extension GestureRule {
         case .swipe(_, _, let rule): return rule.name
         case .hold(_, _, let rule): return rule.name
         case .release(_, _, let rule): return rule.name
+        case .threeFinger(_, _, let rule): return rule.name
         }
     }
 }

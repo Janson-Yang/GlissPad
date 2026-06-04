@@ -17,6 +17,7 @@ public final class GestureRecognizer: @unchecked Sendable {
     private var swipeRecognizers: [String: SwipeGestureRecognizer] = [:]
     private var holdRecognizers: [String: HoldGestureRecognizer] = [:]
     private var releaseRecognizers: [String: ReleaseGestureRecognizer] = [:]
+    private var threeFingerRecognizers: [String: ThreeFingerGestureRecognizer] = [:]
 
     public init(configuration: GestureConfiguration) {
         self.configuration = configuration
@@ -26,9 +27,10 @@ public final class GestureRecognizer: @unchecked Sendable {
     }
 
     public func process(_ frame: TouchFrame) -> [RecognizedGesture] {
-        configuration.triggers.compactMap { trigger in
+        let recognized = configuration.triggers.compactMap { trigger in
             process(trigger, frame: frame)
         }
+        return prioritized(recognized)
     }
 
     private func addState(for trigger: GestureRule) {
@@ -63,6 +65,8 @@ public final class GestureRecognizer: @unchecked Sendable {
             holdRecognizers[id] = HoldGestureRecognizer(id: id, rule: rule, kind: type)
         case .release(let id, let type, let rule):
             releaseRecognizers[id] = ReleaseGestureRecognizer(id: id, rule: rule, kind: type)
+        case .threeFinger(let id, let type, let rule):
+            threeFingerRecognizers[id] = ThreeFingerGestureRecognizer(id: id, type: type, rule: rule)
         }
     }
 
@@ -100,7 +104,17 @@ public final class GestureRecognizer: @unchecked Sendable {
             return holdRecognizers[id]?.process(frame)
         case .release(let id, _, _):
             return releaseRecognizers[id]?.process(frame)
+        case .threeFinger(let id, _, _):
+            return threeFingerRecognizers[id]?.process(frame)
         }
+    }
+
+    private func prioritized(_ gestures: [RecognizedGesture]) -> [RecognizedGesture] {
+        let threeFinger = gestures.filter { $0.kind.isThreeFingerGestureFamily }
+        guard let winner = threeFinger.max(by: { $0.kind.threeFingerPriority < $1.kind.threeFingerPriority }) else {
+            return gestures
+        }
+        return gestures.filter { !$0.kind.isThreeFingerGestureFamily } + [winner]
     }
 
     private func evaluate(

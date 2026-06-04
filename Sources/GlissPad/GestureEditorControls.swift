@@ -78,6 +78,7 @@ extension GestureEditorWindowController {
         configureSwipeRegionSelection()
         configurePathEditor()
         configureDrawnPathEditor()
+        configureThreeFingerControls()
     }
 
     private func configureKeyboardControls() {

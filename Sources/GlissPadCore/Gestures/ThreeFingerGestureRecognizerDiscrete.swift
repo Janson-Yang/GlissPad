@@ -1,0 +1,150 @@
+import Foundation
+
+extension ThreeFingerGestureRecognizer {
+    func processTouch(_ frame: TouchFrame) -> RecognizedGesture? {
+        switch phase {
+        case .idle:
+            startTrackingIfPossible(frame, region: rule.common.region)
+            guard case .tracking(var state) = phase else { return nil }
+            return triggerTouchStartIfNeeded(frame, state: &state)
+        case .tracking(var state):
+            return updateTouchTracking(frame, state: &state)
+        case .cancellingUntilRelease:
+            resetIfReleased(frame)
+        default:
+            phase = .idle
+        }
+        return nil
+    }
+
+    private func triggerTouchStartIfNeeded(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        guard rule.touch.event == .touchStart, canTrigger(at: frame.timestamp) else {
+            phase = .tracking(state)
+            return nil
+        }
+        state.triggered = true
+        phase = .tracking(state)
+        return recognizedGesture(frame)
+    }
+
+    private func updateTouchTracking(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        let active = frame.activeTouches
+        if active.isEmpty { return finishTouchOnRelease(frame, state: state) }
+        guard active.count == 3 else {
+            phase = .cancellingUntilRelease
+            return nil
+        }
+        updateClickState(frame, state: &state)
+        if touchShouldCancel(frame, state: state, active: active) {
+            phase = .cancellingUntilRelease
+            return nil
+        }
+        state.appendSample(from: active)
+        return triggerLongTouchIfNeeded(frame, state: &state)
+    }
+
+    private func finishTouchOnRelease(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> RecognizedGesture? {
+        phase = .idle
+        guard rule.touch.event == .touchEnd, !state.triggered, canTrigger(at: frame.timestamp) else { return nil }
+        return recognizedGesture(frame)
+    }
+
+    private func touchShouldCancel(
+        _ frame: TouchFrame,
+        state: ThreeFingerTrackingState,
+        active: [TouchPoint]
+    ) -> Bool {
+        let moved = movedBeyondAnchors(active, anchors: state.anchors, tolerance: rule.touch.movementTolerance)
+        let pressed = rule.touch.cancelOnPress && (state.sawClick || hasPressed(frame, baseline: state.clickBaseline))
+        return (rule.touch.cancelOnMovement && moved) || pressed
+    }
+
+    private func triggerLongTouchIfNeeded(
+        _ frame: TouchFrame,
+        state: inout ThreeFingerTrackingState
+    ) -> RecognizedGesture? {
+        guard rule.touch.event == .longTouch,
+              frame.timestamp - state.startedAt >= TimeInterval(rule.touch.holdMilliseconds) / 1000,
+              canTrigger(at: frame.timestamp),
+              rule.touch.repeatWhileHolding || !state.triggered else {
+            phase = .tracking(state)
+            return nil
+        }
+        state.triggered = true
+        phase = .tracking(state)
+        return recognizedGesture(frame)
+    }
+
+    func processTap(_ frame: TouchFrame) -> RecognizedGesture? {
+        switch phase {
+        case .idle:
+            startTrackingIfPossible(frame, region: rule.common.region)
+        case .tracking(var state):
+            return updateTapTracking(frame, state: &state)
+        case .cancellingUntilRelease:
+            resetIfReleased(frame)
+        default:
+            phase = .idle
+        }
+        return nil
+    }
+
+    private func updateTapTracking(_ frame: TouchFrame, state: inout ThreeFingerTrackingState) -> RecognizedGesture? {
+        let active = frame.activeTouches
+        if active.isEmpty { return finishTapOnRelease(frame, state: state) }
+        guard active.count == 3 else {
+            phase = .cancellingUntilRelease
+            return nil
+        }
+        updateClickState(frame, state: &state)
+        guard !tapShouldCancel(state: state, active: active) else {
+            phase = .cancellingUntilRelease
+            return nil
+        }
+        phase = .tracking(state)
+        return nil
+    }
+
+    private func finishTapOnRelease(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> RecognizedGesture? {
+        phase = .idle
+        guard frame.timestamp - state.startedAt <= TimeInterval(rule.tap.maximumTapMilliseconds) / 1000,
+              !state.sawClick || !rule.tap.requireNoPress,
+              canTrigger(at: frame.timestamp) else { return nil }
+        return recordTap(frame, anchor: state.samples.last ?? NormalizedPoint(x: 0.5, y: 0.5))
+    }
+
+    private func tapShouldCancel(state: ThreeFingerTrackingState, active: [TouchPoint]) -> Bool {
+        movedBeyondAnchors(active, anchors: state.anchors, tolerance: rule.tap.maximumMovement)
+            || (state.sawClick && rule.tap.requireNoPress)
+    }
+
+    private func recordTap(_ frame: TouchFrame, anchor: NormalizedPoint) -> RecognizedGesture? {
+        guard rule.tap.tapCount > 1 else { return recognizedGesture(frame) }
+        let previous = pendingTap
+        let nextCount = validPendingTap(previous, frame: frame, anchor: anchor) ? previous!.count + 1 : 1
+        pendingTap = ThreeFingerPendingTap(count: nextCount, timestamp: frame.timestamp, anchor: anchor)
+        guard nextCount >= rule.tap.tapCount else { return nil }
+        pendingTap = nil
+        return recognizedGesture(frame)
+    }
+
+    private func validPendingTap(_ pending: ThreeFingerPendingTap?, frame: TouchFrame, anchor: NormalizedPoint) -> Bool {
+        guard let pending else { return false }
+        let interval = TimeInterval(rule.tap.maximumInterTapIntervalMilliseconds) / 1000
+        return frame.timestamp - pending.timestamp <= interval
+            && pending.anchor.distance(to: anchor) <= rule.tap.maximumMovement
+    }
+
+    func expirePendingTapIfNeeded(at timestamp: TimeInterval) {
+        guard let pendingTap else { return }
+        let interval = TimeInterval(rule.tap.maximumInterTapIntervalMilliseconds) / 1000
+        if timestamp - pendingTap.timestamp > interval { self.pendingTap = nil }
+    }
+}
+

@@ -135,6 +135,7 @@ struct GestureSlot: Hashable {
         case .swipe(_, _, let rule): return rule.isEnabled
         case .hold(_, _, let rule): return rule.isEnabled
         case .release(_, _, let rule): return rule.isEnabled
+        case .threeFinger(_, _, let rule): return rule.isEnabled
         case nil: return false
         }
     }
@@ -249,6 +250,14 @@ extension GestureTriggerType {
         case .twoFingerHold: return "timer"
         case .upperRightForcePress: return "keyboard.fill"
         case .releaseLastFinger: return "hand.raised.fill"
+        case .threeFingerTouch: return "hand.raised.fingers.spread.fill"
+        case .threeFingerTap: return "hand.tap.fill"
+        case .threeFingerPress: return "hand.force"
+        case .threeFingerSwipe: return "arrow.left.and.right"
+        case .threeFingerTipTap: return "hand.tap.fill"
+        case .threeFingerTipSwipe: return "point.topleft.down.curvedto.point.bottomright.up"
+        case .thumbTwoFingerScale: return "arrow.up.left.and.down.right.and.arrow.up.right.and.down.left"
+        case .threeFingerDrawing: return "scribble.variable"
         }
     }
 }
