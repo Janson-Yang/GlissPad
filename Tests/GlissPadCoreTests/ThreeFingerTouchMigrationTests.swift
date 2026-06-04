@@ -2,11 +2,11 @@
 import XCTest
 
 final class ThreeFingerTouchMigrationTests: XCTestCase {
-    func testMigratesLegacyLongTouchToleranceOnly() {
+    func testMigratesLegacyTouchToleranceOnly() {
         let configuration = AppConfiguration(
             gestures: GestureConfiguration(triggers: [
-                longTouchTrigger(id: "legacy", tolerance: 0.04),
-                longTouchTrigger(id: "custom", tolerance: 0.12)
+                touchTrigger(id: "legacy", event: .touchEnd, tolerance: 0.04),
+                touchTrigger(id: "custom", event: .longTouch, tolerance: 0.12)
             ]),
             debugLogging: false
         )
@@ -17,14 +17,14 @@ final class ThreeFingerTouchMigrationTests: XCTestCase {
         XCTAssertEqual(tolerance(in: migrated.gestures.triggers[1]), 0.12)
     }
 
-    private func longTouchTrigger(id: String, tolerance: Double) -> GestureRule {
+    private func touchTrigger(id: String, event: ThreeFingerTouchEvent, tolerance: Double) -> GestureRule {
         var rule = ThreeFingerGestureRule(
             name: "Three Finger Touch",
             isEnabled: true,
             cooldownMilliseconds: 650,
             actions: [.script(scriptAction())]
         )
-        rule.touch = ThreeFingerTouchOptions(event: .longTouch, movementTolerance: tolerance)
+        rule.touch = ThreeFingerTouchOptions(event: event, movementTolerance: tolerance)
         return .threeFinger(id: id, type: .threeFingerTouch, rule: rule)
     }
 

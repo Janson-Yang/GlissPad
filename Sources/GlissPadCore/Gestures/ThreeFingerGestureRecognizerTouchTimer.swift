@@ -6,7 +6,7 @@ extension ThreeFingerGestureRecognizer {
         case .collecting(let collection):
             return startTouchTrackingFromTimer(collection, timestamp: timestamp)
         case .tracking(var state):
-            return triggerLongTouchFromTimer(timestamp, state: &state)
+            return triggerTouchFromTimer(timestamp, state: &state)
         default:
             return nil
         }
@@ -36,7 +36,7 @@ extension ThreeFingerGestureRecognizer {
         return triggerTouchStartIfNeeded(timerFrame, state: &state)
     }
 
-    private func triggerLongTouchFromTimer(
+    private func triggerTouchFromTimer(
         _ timestamp: TimeInterval,
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
@@ -46,6 +46,9 @@ extension ThreeFingerGestureRecognizer {
             timestamp: max(timestamp, deadline),
             clickGeneration: state.clickBaseline
         )
+        if rule.touch.event == .touchStart {
+            return repeatTouchIfNeeded(frame, state: &state)
+        }
         return triggerLongTouchIfNeeded(frame, state: &state)
     }
 
@@ -54,6 +57,9 @@ extension ThreeFingerGestureRecognizer {
     }
 
     private func longTouchDeadline(_ state: ThreeFingerTrackingState) -> TimeInterval? {
+        if rule.touch.event == .touchStart {
+            return touchStartContinuousDeadline(state)
+        }
         guard rule.touch.event == .longTouch, rule.touch.triggerTiming != .release else { return nil }
         if !state.triggered {
             let holdDeadline = state.startedAt + TimeInterval(rule.touch.holdMilliseconds) / 1000
@@ -61,6 +67,12 @@ extension ThreeFingerGestureRecognizer {
             return max(holdDeadline, lastTriggeredAt + TimeInterval(rule.cooldownMilliseconds) / 1000)
         }
         guard rule.touch.repeatWhileHolding || rule.touch.triggerTiming == .continuous else { return nil }
+        let lastRepeatAt = state.lastRepeatAt ?? state.startedAt
+        return lastRepeatAt + TimeInterval(rule.touch.repeatIntervalMilliseconds) / 1000
+    }
+
+    private func touchStartContinuousDeadline(_ state: ThreeFingerTrackingState) -> TimeInterval? {
+        guard rule.touch.triggerTiming == .continuous, state.triggered else { return nil }
         let lastRepeatAt = state.lastRepeatAt ?? state.startedAt
         return lastRepeatAt + TimeInterval(rule.touch.repeatIntervalMilliseconds) / 1000
     }
