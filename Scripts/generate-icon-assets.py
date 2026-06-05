@@ -32,11 +32,24 @@ def polygon(points: list[tuple[float, float]], width: float = 2) -> str:
     return f'<polygon points="{pts}" stroke-width="{width:g}"/>'
 
 
-def arrow(x1: float, y1: float, x2: float, y2: float, width: float = 2.1) -> str:
+def ellipse(x: float, y: float, rx: float, ry: float, angle: float = 0, opacity: float = 1) -> str:
+    transform = f' transform="rotate({angle:g} {x:g} {y:g})"' if angle else ""
+    return f'<ellipse cx="{x:g}" cy="{y:g}" rx="{rx:g}" ry="{ry:g}" fill="#000" stroke="none" opacity="{opacity:g}"{transform}/>'
+
+
+def arrow_head(x1: float, y1: float, x2: float, y2: float, width: float = 2.1, length: float = 4) -> str:
     angle = atan2(y2 - y1, x2 - x1)
-    left = (x2 - 4 * cos(angle - 0.7), y2 - 4 * sin(angle - 0.7))
-    right = (x2 - 4 * cos(angle + 0.7), y2 - 4 * sin(angle + 0.7))
-    return line(x1, y1, x2, y2, width) + line(left[0], left[1], x2, y2, width) + line(right[0], right[1], x2, y2, width)
+    left = (x2 - length * cos(angle - 0.7), y2 - length * sin(angle - 0.7))
+    right = (x2 - length * cos(angle + 0.7), y2 - length * sin(angle + 0.7))
+    return line(left[0], left[1], x2, y2, width) + line(right[0], right[1], x2, y2, width)
+
+
+def arrow(x1: float, y1: float, x2: float, y2: float, width: float = 2.1, head_length: float = 4) -> str:
+    return line(x1, y1, x2, y2, width) + arrow_head(x1, y1, x2, y2, width, head_length)
+
+
+def double_arrow(x1: float, y1: float, x2: float, y2: float, width: float = 2.1, head_length: float = 4) -> str:
+    return line(x1, y1, x2, y2, width) + arrow_head(x1, y1, x2, y2, width, head_length) + arrow_head(x2, y2, x1, y1, width, head_length)
 
 
 def dots(count: int, y: float = 23, opacity: float = 1) -> str:
@@ -95,15 +108,19 @@ def hold(count: int) -> str:
 
 
 def tip_tap(count: int) -> str:
-    fixed = dots(max(1, count - 1), y=24, opacity=0.35)
-    moving_x = 16 + (count - 1) * 4
-    return fixed + dot(moving_x, 24) + line(moving_x, 7, moving_x, 15)
+    if count != 3:
+        return dots(count, y=24, opacity=0.45) + arrow(16, 8, 16, 18, 1.8)
+    fixed = circle(8, 24, 1.9, 1.4) + circle(24, 24, 1.9, 1.4)
+    tapping_finger = path("M13 8 C13 5 19 5 19 8 L19 12 C19 15 13 15 13 12 Z", 1.8)
+    return fixed + tapping_finger + arrow(16, 15, 16, 22, 1.7) + dot(16, 24, 2)
 
 
 def tip_swipe(count: int) -> str:
-    fixed = dots(max(1, count - 1), y=24, opacity=0.35)
-    moving_x = 16 + (count - 1) * 4
-    return fixed + dot(moving_x, 24) + path(f"M{moving_x} 22 C{moving_x - 2} 16 {moving_x + 7} 13 {moving_x + 3} 8")
+    if count != 3:
+        return dots(count, y=24, opacity=0.45) + arrow(14, 22, 22, 10, 1.8)
+    fixed = circle(8, 24, 1.9, 1.4) + circle(24, 24, 1.9, 1.4)
+    stroke = path("M16 24 C15 18 21 16 22 9", 2)
+    return fixed + dot(16, 24, 2) + stroke + arrow_head(20, 13, 22, 9, 1.8)
 
 
 def pinch(inward: bool) -> str:
@@ -148,7 +165,10 @@ def category(count: int) -> str:
 
 
 def thumb_scale() -> str:
-    return dot(8, 21, 3.1) + dot(21, 12, 1.8) + dot(24, 20, 1.8) + arrow(12, 19, 17, 16) + arrow(20, 15, 25, 12)
+    thumb = ellipse(8.5, 21, 4.4, 3.1, -25)
+    fingers = dot(23, 10, 2) + dot(25, 19, 2)
+    scale_motion = double_arrow(13.2, 18.5, 24, 14.5, 1.3, 2.8)
+    return thumb + fingers + scale_motion
 
 
 def action_icon(kind: str) -> str:
