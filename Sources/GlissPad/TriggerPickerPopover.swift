@@ -122,7 +122,7 @@ private final class TriggerPickerViewController: NSViewController {
     private func oneFingerCategoryButton() -> NSButton {
         let button = pickerButton(
             title: "One Finger Gestures",
-            symbolName: "hand.point.up.left.fill",
+            symbolName: "category-one-finger",
             accessorySymbolName: "line.3.horizontal",
             target: self,
             action: #selector(showOneFingerGestures)
@@ -133,7 +133,7 @@ private final class TriggerPickerViewController: NSViewController {
     private func twoFingerCategoryButton() -> NSButton {
         pickerButton(
             title: "Two Finger Gestures",
-            symbolName: "hand.raised.fingers.spread.fill",
+            symbolName: "category-two-finger",
             accessorySymbolName: "line.3.horizontal",
             target: self,
             action: #selector(showTwoFingerGestures)
@@ -143,7 +143,7 @@ private final class TriggerPickerViewController: NSViewController {
     private func threeFingerCategoryButton() -> NSButton {
         pickerButton(
             title: "Three Finger Gestures",
-            symbolName: "hand.raised.fingers.spread.fill",
+            symbolName: "category-three-finger",
             accessorySymbolName: "line.3.horizontal",
             target: self,
             action: #selector(showThreeFingerGestures)

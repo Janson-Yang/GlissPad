@@ -19,13 +19,13 @@ struct ActionSlot: Hashable {
     func symbolName(for action: GestureAction) -> String {
         switch action {
         case .script:
-            return "terminal.fill"
+            return "action-script"
         case .keyboardShortcut:
-            return "keyboard"
+            return "action-keyboard"
         case .testHUD:
-            return "rectangle.inset.filled.and.person.filled"
+            return "action-hud"
         case .latency:
-            return "timer"
+            return "action-latency"
         }
     }
 }

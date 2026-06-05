@@ -38,10 +38,10 @@ enum ActionPickerPopover {
         title.font = .systemFont(ofSize: 13, weight: .semibold)
         let stack = NSStackView(views: [
             title,
-            actionButton(ScriptAction.displayName, "terminal.fill", target, scriptAction),
-            actionButton("Keyboard Shortcut", "keyboard", target, keyboardShortcutAction),
-            actionButton("Pop up a test HUD", "rectangle.inset.filled.and.person.filled", target, testHUDAction),
-            actionButton(LatencyAction.displayName, "timer", target, latencyAction)
+            actionButton(ScriptAction.displayName, "action-script", target, scriptAction),
+            actionButton("Keyboard Shortcut", "action-keyboard", target, keyboardShortcutAction),
+            actionButton("Pop up a test HUD", "action-hud", target, testHUDAction),
+            actionButton(LatencyAction.displayName, "action-latency", target, latencyAction)
         ])
         stack.orientation = .vertical
         stack.alignment = .leading

@@ -10,6 +10,7 @@ staging_dir="${staging_root}/GlissPad-${version}"
 app_path="${staging_dir}/GlissPad.app"
 bundle_root="${app_path}/Contents"
 binary_path="${project_root}/.build/release/glisspad"
+resource_bundle_path="${project_root}/.build/release/glisspad_GlissPad.bundle"
 dmg_path="${dist_dir}/GlissPad-v${version}.dmg"
 
 if [[ ! "${version}" =~ ^[0-9]+([.][0-9]+){2}$ ]]; then
@@ -23,6 +24,7 @@ if [[ ! "${build_number}" =~ ^[0-9]+$ ]]; then
 fi
 
 cd "${project_root}"
+rm -rf "${resource_bundle_path}"
 swift build -c release
 
 rm -rf "${staging_dir}"
@@ -35,6 +37,11 @@ cp "${project_root}/Packaging/Info.plist" "${bundle_root}/Info.plist"
 cp "${project_root}/Packaging/GlissPad.icns" "${bundle_root}/Resources/GlissPad.icns"
 cp "${binary_path}" "${bundle_root}/MacOS/glisspad"
 chmod 755 "${bundle_root}/MacOS/glisspad"
+if [ ! -d "${resource_bundle_path}" ]; then
+  echo "Missing resource bundle: ${resource_bundle_path}" >&2
+  exit 66
+fi
+cp -R "${resource_bundle_path}" "${bundle_root}/Resources/"
 ln -s /Applications "${staging_dir}/Applications"
 
 sign_identity="${GLISSPAD_CODESIGN_IDENTITY:-}"

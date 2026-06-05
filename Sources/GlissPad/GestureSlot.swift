@@ -31,7 +31,7 @@ struct GestureSlot: Hashable {
     }
 
     func symbolName(in configuration: AppConfiguration) -> String {
-        trigger(in: configuration)?.type.symbolName ?? "hand.tap.fill"
+        trigger(in: configuration)?.type.symbolName ?? "trigger-one-finger-tap"
     }
 
     func pressRule(in configuration: AppConfiguration) -> PressGestureRule? {
@@ -218,46 +218,5 @@ struct GestureSlot: Hashable {
     func writeActions(_ actions: [GestureAction], to configuration: inout AppConfiguration) {
         guard let trigger = trigger(in: configuration) else { return }
         configuration.gestures.triggers[index] = trigger.replacingActions(actions)
-    }
-}
-
-extension GestureTriggerType {
-    var symbolName: String {
-        switch self {
-        case .oneFingerTouchStart: return "hand.point.up.left.fill"
-        case .oneFingerLongPress: return "hand.tap.fill"
-        case .oneFingerCircle: return "arrow.clockwise.circle.fill"
-        case .oneFingerSquare: return "square"
-        case .oneFingerTriangle: return "triangle"
-        case .oneFingerCornerClick: return "scope"
-        case .oneFingerTap: return "hand.tap.fill"
-        case .oneFingerDoubleTap: return "hand.tap.fill"
-        case .oneFingerPress: return "hand.tap.fill"
-        case .oneFingerCustomPath: return "scribble.variable"
-        case .oneFingerDrawnPath: return "scribble.variable"
-        case .twoFingerTouchStart: return "hand.point.up.left.fill"
-        case .twoFingerTap: return "hand.tap.fill"
-        case .tipTap: return "hand.tap.fill"
-        case .pinchIn: return "arrow.down.right.and.arrow.up.left"
-        case .pinchOut: return "arrow.up.left.and.arrow.down.right"
-        case .rotateLeft: return "rotate.left.fill"
-        case .rotateRight: return "rotate.right.fill"
-        case .freeformTwoFingerSwipe: return "point.topleft.down.curvedto.point.bottomright.up"
-        case .regionTwoFingerSwipe: return "arrow.right.square.fill"
-        case .threeFingerForcePress: return "hand.tap.fill"
-        case .upperLeftForcePress: return "command"
-        case .leftEdgeTwoFingerSwipe: return "arrow.right"
-        case .twoFingerHold: return "timer"
-        case .upperRightForcePress: return "keyboard.fill"
-        case .releaseLastFinger: return "hand.raised.fill"
-        case .threeFingerTouch: return "hand.raised.fingers.spread.fill"
-        case .threeFingerTap: return "hand.tap.fill"
-        case .threeFingerPress: return "hand.force"
-        case .threeFingerSwipe: return "arrow.left.and.right"
-        case .threeFingerTipTap: return "hand.tap.fill"
-        case .threeFingerTipSwipe: return "point.topleft.down.curvedto.point.bottomright.up"
-        case .thumbTwoFingerScale: return "arrow.up.left.and.down.right.and.arrow.up.right.and.down.left"
-        case .threeFingerDrawing: return "scribble.variable"
-        }
     }
 }

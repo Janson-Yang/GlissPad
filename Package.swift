@@ -25,7 +25,10 @@ let package = Package(
         ),
         .executableTarget(
             name: "GlissPad",
-            dependencies: ["GlissPadCore"]
+            dependencies: ["GlissPadCore"],
+            resources: [
+                .process("Resources")
+            ]
         ),
         .testTarget(
             name: "GlissPadCoreTests",

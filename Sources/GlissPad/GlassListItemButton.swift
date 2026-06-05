@@ -64,20 +64,20 @@ class GlassListItemButton: NSButton {
 
     private func drawSymbol() {
         guard let symbolName,
-              let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) else {
+              let image = IconCatalog.image(named: symbolName) else {
             return
         }
         let rect = NSRect(x: 18, y: bounds.midY - 8, width: 16, height: 16)
-        image.draw(in: rect)
+        IconCatalog.drawTemplate(image, in: rect, color: iconColor)
     }
 
     private func drawAccessorySymbol() {
         guard let accessorySymbolName,
-              let image = NSImage(systemSymbolName: accessorySymbolName, accessibilityDescription: nil) else {
+              let image = IconCatalog.image(named: accessorySymbolName) else {
             return
         }
         let rect = NSRect(x: bounds.maxX - 34, y: bounds.midY - 8, width: 16, height: 16)
-        image.draw(in: rect)
+        IconCatalog.drawTemplate(image, in: rect, color: iconColor)
     }
 
     private func drawText() {
@@ -107,6 +107,10 @@ class GlassListItemButton: NSButton {
     private func textColor(for weight: NSFont.Weight) -> NSColor {
         guard weight != .regular else { return .tertiaryLabelColor }
         return isSelectedItem ? .labelColor : .secondaryLabelColor
+    }
+
+    private var iconColor: NSColor {
+        isSelectedItem ? .labelColor : .secondaryLabelColor
     }
 
     private var backgroundColor: NSColor {
