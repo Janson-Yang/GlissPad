@@ -82,6 +82,11 @@ final class FourFingerGestureRecognizerTests: XCTestCase {
         XCTAssertEqual(gestures.map(\.kind), [.thumbThreeFingerScale])
     }
 
+    func testScaleReleaseTriggersForEitherPinchAndSpread() {
+        assertScaleReleaseTriggers(start: spreadStart(), end: spreadEnd(), releasedEnd: spreadEndWithReleasedFinger())
+        assertScaleReleaseTriggers(start: spreadEnd(), end: spreadStart(), releasedEnd: spreadStartWithReleasedFinger())
+    }
+
     func testTipTapTriggersWhenFourthFingerTapsBesideThreeFixedFingers() {
         var rule = fourFingerRule(.fourFingerTipTap)
         rule.tipTap = FourFingerTipTapOptions(tapSide: .right)
@@ -123,6 +128,19 @@ final class FourFingerGestureRecognizerTests: XCTestCase {
         return rule
     }
 
+    private func assertScaleReleaseTriggers(start: [TouchPoint], end: [TouchPoint], releasedEnd: [TouchPoint]) {
+        var rule = fourFingerRule(.thumbThreeFingerScale)
+        rule.scale = ThreeFingerScaleOptions(direction: .any, minimumScaleDelta: 0.18, triggerTiming: .release)
+        let recognizer = recognizer(.thumbThreeFingerScale, rule: rule)
+
+        XCTAssertTrue(recognizer.process(frame(touches: start, time: 1.0)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: start, time: 1.05)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: end, time: 1.22)).isEmpty)
+        let gestures = recognizer.process(frame(touches: releasedEnd, time: 1.26))
+
+        XCTAssertEqual(gestures.map(\.kind), [.thumbThreeFingerScale])
+    }
+
     private func frame(touches: [TouchPoint], time: TimeInterval) -> TouchFrame {
         TouchFrame(touches: touches, timestamp: time, frameNumber: Int(time * 100))
     }
@@ -160,6 +178,18 @@ final class FourFingerGestureRecognizerTests: XCTestCase {
             touch(id: 3, x: 0.6, y: 0.35),
             touch(id: 4, x: 0.8, y: 0.65)
         ]
+    }
+
+    private func spreadEndWithReleasedFinger() -> [TouchPoint] {
+        spreadEnd().map { $0.id == 4 ? released($0) : $0 }
+    }
+
+    private func spreadStartWithReleasedFinger() -> [TouchPoint] {
+        spreadStart().map { $0.id == 4 ? released($0) : $0 }
+    }
+
+    private func released(_ touch: TouchPoint) -> TouchPoint {
+        TouchPoint(id: touch.id, state: .breakTouch, position: touch.position, pressure: touch.pressure, size: touch.size)
     }
 
     private func touch(id: Int, x: Double, y: Double, pressure: Double = 0.2) -> TouchPoint {
