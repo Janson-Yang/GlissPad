@@ -61,7 +61,14 @@ extension GestureEditorWindowController {
             .fourFingerSwipe,
             .thumbThreeFingerScale,
             .fourFingerTipTap,
-            .fourFingerDrawing
+            .fourFingerDrawing,
+            .fiveFingerTouch,
+            .fiveFingerTap,
+            .fiveFingerPress,
+            .thumbFourFingerScale,
+            .fiveFingerSwipe,
+            .fiveFingerDrawing,
+            .wholeHandTap
         ]
         if let type = selectedSlot.trigger(in: configuration)?.type,
            values == [0, 1, 0, 1],

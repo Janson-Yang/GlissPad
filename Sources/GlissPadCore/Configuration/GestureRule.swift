@@ -18,6 +18,7 @@ public enum GestureRule: Codable, Equatable, Sendable {
     case release(id: String, type: GestureTriggerType, rule: ReleaseGestureRule)
     case threeFinger(id: String, type: GestureTriggerType, rule: ThreeFingerGestureRule)
     case fourFinger(id: String, type: GestureTriggerType, rule: FourFingerGestureRule)
+    case fiveAndMoreFinger(id: String, type: GestureTriggerType, rule: FiveAndMoreFingerGestureRule)
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -39,6 +40,7 @@ public enum GestureRule: Codable, Equatable, Sendable {
         case release
         case threeFinger
         case fourFinger
+        case fiveAndMoreFinger
     }
 
     public var id: String {
@@ -48,7 +50,7 @@ public enum GestureRule: Codable, Equatable, Sendable {
              .touchStart(let id, _, _), .tipTap(let id, _, _), .transform(let id, _, _),
              .multiFingerSwipe(let id, _, _), .press(let id, _, _), .swipe(let id, _, _),
              .hold(let id, _, _), .release(let id, _, _), .threeFinger(let id, _, _),
-             .fourFinger(let id, _, _):
+             .fourFinger(let id, _, _), .fiveAndMoreFinger(let id, _, _):
             return id
         }
     }
@@ -60,7 +62,7 @@ public enum GestureRule: Codable, Equatable, Sendable {
              .touchStart(_, let type, _), .tipTap(_, let type, _), .transform(_, let type, _),
              .multiFingerSwipe(_, let type, _), .press(_, let type, _), .swipe(_, let type, _),
              .hold(_, let type, _), .release(_, let type, _), .threeFinger(_, let type, _),
-             .fourFinger(_, let type, _):
+             .fourFinger(_, let type, _), .fiveAndMoreFinger(_, let type, _):
             return type
         }
     }
@@ -136,6 +138,13 @@ public enum GestureRule: Codable, Equatable, Sendable {
                 type: type,
                 rule: try container.decode(FourFingerGestureRule.self, forKey: .fourFinger)
             )
+        case .fiveFingerTouch, .fiveFingerTap, .fiveFingerPress, .thumbFourFingerScale,
+             .fiveFingerSwipe, .fiveFingerDrawing, .wholeHandTap:
+            self = .fiveAndMoreFinger(
+                id: id,
+                type: type,
+                rule: try container.decode(FiveAndMoreFingerGestureRule.self, forKey: .fiveAndMoreFinger)
+            )
         }
     }
 
@@ -178,6 +187,8 @@ public enum GestureRule: Codable, Equatable, Sendable {
             try container.encode(rule, forKey: .threeFinger)
         case .fourFinger(_, _, let rule):
             try container.encode(rule, forKey: .fourFinger)
+        case .fiveAndMoreFinger(_, _, let rule):
+            try container.encode(rule, forKey: .fiveAndMoreFinger)
         }
     }
 
@@ -270,6 +281,8 @@ public enum GestureRule: Codable, Equatable, Sendable {
             try rule.validate(name: "\(name).threeFinger", type: type)
         case .fourFinger(_, let type, let rule):
             try rule.validate(name: "\(name).fourFinger", type: type)
+        case .fiveAndMoreFinger(_, let type, let rule):
+            try rule.validate(name: "\(name).fiveAndMoreFinger", type: type)
         }
     }
 

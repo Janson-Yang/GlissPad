@@ -99,6 +99,7 @@ final class GestureEditorWindowController: NSWindowController, NSWindowDelegate 
     let swipeStartRegionView = RegionSelectionView()
     let swipeEndRegionView = RegionSelectionView()
     let threeFingerControls = ThreeFingerGestureControls()
+    let fiveAndMoreFingerControls = FiveAndMoreFingerGestureControls()
     let languagePopup = NSPopUpButton()
     let scriptModeHelpButton = HelpIconButton(symbolName: "exclamationmark.circle")
     let keyboardModePopup = NSPopUpButton()

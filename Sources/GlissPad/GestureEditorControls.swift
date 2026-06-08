@@ -83,6 +83,7 @@ extension GestureEditorWindowController {
         configurePathEditor()
         configureDrawnPathEditor()
         configureThreeFingerControls()
+        configureFiveAndMoreFingerControls()
     }
 
     private func configureKeyboardControls() {

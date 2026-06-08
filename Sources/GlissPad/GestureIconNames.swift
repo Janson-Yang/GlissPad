@@ -44,6 +44,13 @@ extension GestureTriggerType {
         case .thumbThreeFingerScale: return "trigger-thumb-three-finger-scale"
         case .fourFingerTipTap: return "trigger-four-finger-tip-tap"
         case .fourFingerDrawing: return "trigger-four-finger-drawing"
+        case .fiveFingerTouch: return "trigger-five-finger-touch"
+        case .fiveFingerTap: return "trigger-five-finger-tap"
+        case .fiveFingerPress: return "trigger-five-finger-press"
+        case .thumbFourFingerScale: return "trigger-thumb-four-finger-scale"
+        case .fiveFingerSwipe: return "trigger-five-finger-swipe"
+        case .fiveFingerDrawing: return "trigger-five-finger-drawing"
+        case .wholeHandTap: return "trigger-whole-hand-tap"
         }
     }
 }

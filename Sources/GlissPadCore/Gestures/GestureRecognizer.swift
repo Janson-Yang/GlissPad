@@ -19,6 +19,8 @@ public final class GestureRecognizer: @unchecked Sendable {
     private var releaseRecognizers: [String: ReleaseGestureRecognizer] = [:]
     private var threeFingerRecognizers: [String: ThreeFingerGestureRecognizer] = [:]
     private var fourFingerRecognizers: [String: ThreeFingerGestureRecognizer] = [:]
+    private var fiveFingerRecognizers: [String: ThreeFingerGestureRecognizer] = [:]
+    private var wholeHandRecognizers: [String: WholeHandTapGestureRecognizer] = [:]
 
     public init(configuration: GestureConfiguration) {
         self.configuration = configuration
@@ -86,6 +88,17 @@ public final class GestureRecognizer: @unchecked Sendable {
                 rule: rule.recognitionRule(),
                 requiredFingerCount: 4
             )
+        case .fiveAndMoreFinger(let id, let type, let rule):
+            if type == .wholeHandTap {
+                wholeHandRecognizers[id] = WholeHandTapGestureRecognizer(id: id, type: type, rule: rule)
+            } else {
+                fiveFingerRecognizers[id] = ThreeFingerGestureRecognizer(
+                    id: id,
+                    type: type,
+                    rule: rule.recognitionRule(),
+                    requiredFingerCount: 5
+                )
+            }
         }
     }
 
@@ -127,6 +140,11 @@ public final class GestureRecognizer: @unchecked Sendable {
             return threeFingerRecognizers[id]?.process(frame)
         case .fourFinger(let id, _, _):
             return fourFingerRecognizers[id]?.process(frame)
+        case .fiveAndMoreFinger(let id, let type, _):
+            if type == .wholeHandTap {
+                return wholeHandRecognizers[id]?.process(frame)
+            }
+            return fiveFingerRecognizers[id]?.process(frame)
         }
     }
 
@@ -136,6 +154,9 @@ public final class GestureRecognizer: @unchecked Sendable {
             return threeFingerRecognizers[id]?.processTimer(at: timestamp)
         case .fourFinger(let id, _, _):
             return fourFingerRecognizers[id]?.processTimer(at: timestamp)
+        case .fiveAndMoreFinger(let id, let type, _):
+            guard type != .wholeHandTap else { return nil }
+            return fiveFingerRecognizers[id]?.processTimer(at: timestamp)
         default:
             return nil
         }
@@ -147,6 +168,9 @@ public final class GestureRecognizer: @unchecked Sendable {
             return threeFingerRecognizers[id]?.nextTimerDeadline()
         case .fourFinger(let id, _, _):
             return fourFingerRecognizers[id]?.nextTimerDeadline()
+        case .fiveAndMoreFinger(let id, let type, _):
+            guard type != .wholeHandTap else { return nil }
+            return fiveFingerRecognizers[id]?.nextTimerDeadline()
         default:
             return nil
         }

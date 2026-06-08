@@ -23,13 +23,13 @@ final class ThreeFingerGestureRecognizer {
         }
         expirePendingTapIfNeeded(at: frame.timestamp)
         switch type {
-        case .threeFingerTouch, .fourFingerTouch:
+        case .threeFingerTouch, .fourFingerTouch, .fiveFingerTouch:
             return processTouch(frame)
-        case .threeFingerTap, .fourFingerTap:
+        case .threeFingerTap, .fourFingerTap, .fiveFingerTap:
             return processTap(frame)
-        case .threeFingerPress, .fourFingerPress:
+        case .threeFingerPress, .fourFingerPress, .fiveFingerPress:
             return processPress(frame)
-        case .threeFingerSwipe, .fourFingerSwipe:
+        case .threeFingerSwipe, .fourFingerSwipe, .fiveFingerSwipe:
             return processSwipe(frame)
         case .threeFingerTipTap:
             return processTipTap(frame)
@@ -37,9 +37,9 @@ final class ThreeFingerGestureRecognizer {
             return processTipSwipe(frame)
         case .fourFingerTipTap:
             return processTipTap(frame)
-        case .thumbTwoFingerScale, .thumbThreeFingerScale:
+        case .thumbTwoFingerScale, .thumbThreeFingerScale, .thumbFourFingerScale:
             return processScale(frame)
-        case .threeFingerDrawing, .fourFingerDrawing:
+        case .threeFingerDrawing, .fourFingerDrawing, .fiveFingerDrawing:
             return processDrawing(frame)
         default:
             return nil
@@ -52,7 +52,7 @@ final class ThreeFingerGestureRecognizer {
             return nil
         }
         switch type {
-        case .threeFingerTouch, .fourFingerTouch:
+        case .threeFingerTouch, .fourFingerTouch, .fiveFingerTouch:
             return processTouchTimer(at: timestamp)
         default:
             return nil
@@ -62,7 +62,7 @@ final class ThreeFingerGestureRecognizer {
     func nextTimerDeadline() -> TimeInterval? {
         guard rule.isEnabled else { return nil }
         switch type {
-        case .threeFingerTouch, .fourFingerTouch:
+        case .threeFingerTouch, .fourFingerTouch, .fiveFingerTouch:
             return nextTouchDeadline()
         default:
             return nil
@@ -129,13 +129,15 @@ final class ThreeFingerGestureRecognizer {
     var stableFingerDuration: TimeInterval { TimeInterval(rule.common.minStableFingerCountDurationMilliseconds) / 1000 }
 
     private var effectiveCommonTimeGap: TimeInterval {
-        let needsRelaxedCollection = (type == .threeFingerDrawing || type == .fourFingerDrawing)
-            || ((type == .threeFingerTouch || type == .fourFingerTouch) && rule.touch.event == .longTouch)
+        let needsRelaxedCollection = (type == .threeFingerDrawing || type == .fourFingerDrawing || type == .fiveFingerDrawing)
+            || ((type == .threeFingerTouch || type == .fourFingerTouch || type == .fiveFingerTouch)
+                && rule.touch.event == .longTouch)
         return needsRelaxedCollection ? max(commonTimeGap, 0.35) : commonTimeGap
     }
 
     private var isLongTouch: Bool {
-        (type == .threeFingerTouch || type == .fourFingerTouch) && rule.touch.event == .longTouch
+        (type == .threeFingerTouch || type == .fourFingerTouch || type == .fiveFingerTouch)
+            && rule.touch.event == .longTouch
     }
 
     private func currentCollection(frame: TouchFrame, active: [TouchPoint]) -> ThreeFingerCollectionState {

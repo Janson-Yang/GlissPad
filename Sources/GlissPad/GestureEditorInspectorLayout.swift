@@ -85,6 +85,9 @@ extension GestureEditorWindowController {
         case .fourFingerTouch, .fourFingerTap, .fourFingerPress, .fourFingerSwipe,
              .thumbThreeFingerScale, .fourFingerTipTap, .fourFingerDrawing:
             return makeThreeFingerConfigPanel(type: trigger.type)
+        case .fiveFingerTouch, .fiveFingerTap, .fiveFingerPress, .thumbFourFingerScale,
+             .fiveFingerSwipe, .fiveFingerDrawing, .wholeHandTap:
+            return makeFiveAndMoreFingerConfigPanel(type: trigger.type)
         }
     }
 

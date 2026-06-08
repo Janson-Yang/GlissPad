@@ -57,7 +57,8 @@ private final class TriggerPickerViewController: NSViewController {
             oneFingerCategoryButton(),
             twoFingerCategoryButton(),
             threeFingerCategoryButton(),
-            fourFingerCategoryButton()
+            fourFingerCategoryButton(),
+            fiveAndMoreFingerCategoryButton()
         ] + rootTriggerButtons()
         replaceStack(with: [title("Add Trigger")] + buttons, buttonCount: buttons.count)
     }
@@ -86,6 +87,15 @@ private final class TriggerPickerViewController: NSViewController {
         replaceStack(with: [back, title("Four Finger Gestures")] + triggerButtons, buttonCount: triggerButtons.count + 1)
     }
 
+    @objc private func showFiveAndMoreFingerGestures() {
+        let back = backButton()
+        let triggerButtons = fiveAndMoreFingerTriggerButtons()
+        replaceStack(
+            with: [back, title("Five and More Finger Gestures")] + triggerButtons,
+            buttonCount: triggerButtons.count + 1
+        )
+    }
+
     @objc private func goBack() {
         showRoot()
     }
@@ -111,6 +121,7 @@ private final class TriggerPickerViewController: NSViewController {
             .filter { !Self.twoFingerTypes.contains($0) }
             .filter { !Self.threeFingerTypes.contains($0) }
             .filter { !Self.fourFingerTypes.contains($0) }
+            .filter { !Self.fiveAndMoreFingerTypes.contains($0) }
             .filter { !Self.hiddenTypes.contains($0) }
             .map(triggerButton)
     }
@@ -129,6 +140,10 @@ private final class TriggerPickerViewController: NSViewController {
 
     private func fourFingerTriggerButtons() -> [NSButton] {
         Self.fourFingerTypes.map(triggerButton)
+    }
+
+    private func fiveAndMoreFingerTriggerButtons() -> [NSButton] {
+        Self.fiveAndMoreFingerTypes.map(triggerButton)
     }
 
     private func oneFingerCategoryButton() -> NSButton {
@@ -169,6 +184,16 @@ private final class TriggerPickerViewController: NSViewController {
             accessorySymbolName: "line.3.horizontal",
             target: self,
             action: #selector(showFourFingerGestures)
+        )
+    }
+
+    private func fiveAndMoreFingerCategoryButton() -> NSButton {
+        pickerButton(
+            title: "Five and More Finger Gestures",
+            symbolName: "category-five-and-more-finger",
+            accessorySymbolName: "line.3.horizontal",
+            target: self,
+            action: #selector(showFiveAndMoreFingerGestures)
         )
     }
 
@@ -257,6 +282,16 @@ private final class TriggerPickerViewController: NSViewController {
         .thumbThreeFingerScale,
         .fourFingerTipTap,
         .fourFingerDrawing
+    ]
+
+    private static let fiveAndMoreFingerTypes: [GestureTriggerType] = [
+        .fiveFingerTouch,
+        .fiveFingerTap,
+        .fiveFingerPress,
+        .thumbFourFingerScale,
+        .fiveFingerSwipe,
+        .fiveFingerDrawing,
+        .wholeHandTap
     ]
 
     private static let hiddenTypes: [GestureTriggerType] = [

@@ -31,10 +31,24 @@ extension GestureTriggerType {
     }
 
     var multiFingerPriority: Int {
-        isFourFingerGestureFamily ? fourFingerPriority : threeFingerPriority
+        if isFiveAndMoreFingerGestureFamily { return fiveAndMoreFingerPriority }
+        return isFourFingerGestureFamily ? fourFingerPriority : threeFingerPriority
     }
 
     var isMultiFingerGestureFamily: Bool {
-        isThreeFingerGestureFamily || isFourFingerGestureFamily
+        isThreeFingerGestureFamily || isFourFingerGestureFamily || isFiveAndMoreFingerGestureFamily
+    }
+
+    private var fiveAndMoreFingerPriority: Int {
+        switch self {
+        case .wholeHandTap: return 100
+        case .fiveFingerPress: return 90
+        case .thumbFourFingerScale: return 80
+        case .fiveFingerDrawing: return 70
+        case .fiveFingerSwipe: return 50
+        case .fiveFingerTouch: return 10
+        case .fiveFingerTap: return 20
+        default: return 0
+        }
     }
 }
