@@ -166,15 +166,16 @@ def four_finger_swipe() -> str:
 
 
 def thumb_three_finger_scale() -> str:
-    thumb = ellipse(7.5, 22, 4.2, 3, -25)
-    fingers = dot(20, 8.5, 1.8) + dot(25, 15.5, 1.8) + dot(21, 23, 1.8)
-    return thumb + fingers + double_arrow(12.5, 19, 22, 14.5, 1.25, 2.6)
+    thumb = ellipse(7.2, 23, 4.5, 3.1, -24)
+    fingers = dot(19, 7.5, 1.9) + dot(25, 14.5, 1.9) + dot(21, 23.5, 1.9)
+    return thumb + fingers + double_arrow(12.5, 20, 22, 14.5, 1.45, 3.2)
 
 
 def four_finger_tip_tap() -> str:
-    fixed = "".join(circle(x, 24, 1.8, 1.35) for x in (8, 16, 24))
-    tapping = path("M13 7 C13 4.5 19 4.5 19 7 L19 11.5 C19 14.5 13 14.5 13 11.5 Z", 1.7)
-    return fixed + tapping + arrow(16, 15, 16, 21.5, 1.6, 3) + dot(16, 24, 1.8)
+    contacts = dot(6.5, 25, 1.45, 0.45) + dot(13, 25, 1.45, 0.45)
+    contacts += dot(20, 25, 1.9) + dot(26.5, 25, 1.45, 0.45)
+    tapping = path("M17 6.5 C17 4.2 23 4.2 23 6.5 L23 11.5 C23 14.5 17 14.5 17 11.5 Z", 1.7)
+    return contacts + tapping + arrow(20, 15.5, 20, 22.5, 1.55, 3)
 
 
 def four_finger_drawing() -> str:
