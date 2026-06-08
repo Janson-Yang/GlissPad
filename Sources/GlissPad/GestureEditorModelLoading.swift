@@ -103,6 +103,10 @@ extension GestureEditorWindowController {
             loadThreeFingerRule(rule)
             return
         }
+        if let rule = selectedSlot.fourFingerRule(in: configuration) {
+            loadFourFingerRule(rule)
+            return
+        }
         if let rule = selectedSlot.swipeRule(in: configuration) {
             cooldownField.stringValue = "\(rule.cooldownMilliseconds)"
             swipeTravelField.stringValue = "\(rule.minimumTravel)"

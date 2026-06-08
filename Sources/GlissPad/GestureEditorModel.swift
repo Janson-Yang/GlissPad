@@ -65,6 +65,8 @@ extension GestureEditorWindowController {
             try writePressRule()
         case .threeFinger?:
             try writeThreeFingerRule()
+        case .fourFinger?:
+            try writeFourFingerRule()
         case nil:
             return
         }

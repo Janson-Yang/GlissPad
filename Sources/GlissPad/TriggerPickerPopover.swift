@@ -56,7 +56,8 @@ private final class TriggerPickerViewController: NSViewController {
         let buttons = [
             oneFingerCategoryButton(),
             twoFingerCategoryButton(),
-            threeFingerCategoryButton()
+            threeFingerCategoryButton(),
+            fourFingerCategoryButton()
         ] + rootTriggerButtons()
         replaceStack(with: [title("Add Trigger")] + buttons, buttonCount: buttons.count)
     }
@@ -77,6 +78,12 @@ private final class TriggerPickerViewController: NSViewController {
         let back = backButton()
         let triggerButtons = threeFingerTriggerButtons()
         replaceStack(with: [back, title("Three Finger Gestures")] + triggerButtons, buttonCount: triggerButtons.count + 1)
+    }
+
+    @objc private func showFourFingerGestures() {
+        let back = backButton()
+        let triggerButtons = fourFingerTriggerButtons()
+        replaceStack(with: [back, title("Four Finger Gestures")] + triggerButtons, buttonCount: triggerButtons.count + 1)
     }
 
     @objc private func goBack() {
@@ -103,6 +110,7 @@ private final class TriggerPickerViewController: NSViewController {
             .filter { !Self.oneFingerTypes.contains($0) }
             .filter { !Self.twoFingerTypes.contains($0) }
             .filter { !Self.threeFingerTypes.contains($0) }
+            .filter { !Self.fourFingerTypes.contains($0) }
             .filter { !Self.hiddenTypes.contains($0) }
             .map(triggerButton)
     }
@@ -117,6 +125,10 @@ private final class TriggerPickerViewController: NSViewController {
 
     private func threeFingerTriggerButtons() -> [NSButton] {
         Self.threeFingerTypes.map(triggerButton)
+    }
+
+    private func fourFingerTriggerButtons() -> [NSButton] {
+        Self.fourFingerTypes.map(triggerButton)
     }
 
     private func oneFingerCategoryButton() -> NSButton {
@@ -147,6 +159,16 @@ private final class TriggerPickerViewController: NSViewController {
             accessorySymbolName: "line.3.horizontal",
             target: self,
             action: #selector(showThreeFingerGestures)
+        )
+    }
+
+    private func fourFingerCategoryButton() -> NSButton {
+        pickerButton(
+            title: "Four Finger Gestures",
+            symbolName: "category-four-finger",
+            accessorySymbolName: "line.3.horizontal",
+            target: self,
+            action: #selector(showFourFingerGestures)
         )
     }
 
@@ -225,6 +247,16 @@ private final class TriggerPickerViewController: NSViewController {
         .threeFingerTipSwipe,
         .thumbTwoFingerScale,
         .threeFingerDrawing
+    ]
+
+    private static let fourFingerTypes: [GestureTriggerType] = [
+        .fourFingerTouch,
+        .fourFingerTap,
+        .fourFingerPress,
+        .fourFingerSwipe,
+        .thumbThreeFingerScale,
+        .fourFingerTipTap,
+        .fourFingerDrawing
     ]
 
     private static let hiddenTypes: [GestureTriggerType] = [

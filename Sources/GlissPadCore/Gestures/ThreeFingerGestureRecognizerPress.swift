@@ -22,8 +22,8 @@ extension ThreeFingerGestureRecognizer {
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
         let active = frame.activeTouches
-        if active.count < 3 { return beginPressRelease(frame, state: &state) }
-        guard active.count == 3 else {
+        if active.count < requiredFingerCount { return beginPressRelease(frame, state: &state) }
+        guard active.count == requiredFingerCount else {
             phase = .cancellingUntilRelease
             return nil
         }
@@ -93,7 +93,7 @@ extension ThreeFingerGestureRecognizer {
     }
 
     private func pressureBiasSatisfied(_ touches: [TouchPoint]) -> Bool {
-        guard rule.press.pressureBias != .none else { return true }
+        guard requiredFingerCount == 3, rule.press.pressureBias != .none else { return true }
         let sorted = touches.sortedByHorizontalPosition()
         guard sorted.count == 3 else { return false }
         let total = max(sorted.map(\.pressure).reduce(0, +), 0.000_001)

@@ -26,7 +26,7 @@ extension GestureEditorWindowController {
         }
     }
 
-    private func visibleThreeFingerTouch() throws -> ThreeFingerTouchOptions {
+    func visibleThreeFingerTouch() throws -> ThreeFingerTouchOptions {
         ThreeFingerTouchOptions(
             event: try selected(threeFingerControls.touchEventPopup, values: ThreeFingerTouchEvent.allCases),
             holdMilliseconds: try intValue(threeFingerControls.touchHoldField, name: "hold duration"),
@@ -45,7 +45,7 @@ extension GestureEditorWindowController {
         )
     }
 
-    private func visibleThreeFingerTap() throws -> ThreeFingerTapOptions {
+    func visibleThreeFingerTap() throws -> ThreeFingerTapOptions {
         ThreeFingerTapOptions(
             tapCount: try intValue(threeFingerControls.tapCountField, name: "tap count"),
             maximumTapMilliseconds: try intValue(threeFingerControls.tapDurationField, name: "tap duration"),
@@ -67,7 +67,7 @@ extension GestureEditorWindowController {
         )
     }
 
-    private func visibleThreeFingerSwipe() throws -> ThreeFingerSwipeOptions {
+    func visibleThreeFingerSwipe() throws -> ThreeFingerSwipeOptions {
         ThreeFingerSwipeOptions(
             direction: try selected(threeFingerControls.swipeDirectionPopup, values: ThreeFingerDirection.allCases),
             pressMode: try selected(threeFingerControls.swipePressModePopup, values: ThreeFingerSwipePressMode.allCases),
@@ -111,7 +111,7 @@ extension GestureEditorWindowController {
         )
     }
 
-    private func visibleThreeFingerScale() throws -> ThreeFingerScaleOptions {
+    func visibleThreeFingerScale() throws -> ThreeFingerScaleOptions {
         ThreeFingerScaleOptions(
             direction: try selected(threeFingerControls.scaleDirectionPopup, values: ThreeFingerScaleDirection.allCases),
             minimumScaleDelta: try doubleValue(threeFingerControls.scaleDeltaField, name: "scale delta"),
@@ -121,7 +121,7 @@ extension GestureEditorWindowController {
         )
     }
 
-    private func visibleThreeFingerDrawing(existing: ThreeFingerDrawingOptions) throws -> ThreeFingerDrawingOptions {
+    func visibleThreeFingerDrawing(existing: ThreeFingerDrawingOptions) throws -> ThreeFingerDrawingOptions {
         ThreeFingerDrawingOptions(
             template: ThreeFingerDrawingTemplate(
                 id: existing.template.id,

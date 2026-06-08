@@ -18,6 +18,7 @@ public final class GestureRecognizer: @unchecked Sendable {
     private var holdRecognizers: [String: HoldGestureRecognizer] = [:]
     private var releaseRecognizers: [String: ReleaseGestureRecognizer] = [:]
     private var threeFingerRecognizers: [String: ThreeFingerGestureRecognizer] = [:]
+    private var fourFingerRecognizers: [String: ThreeFingerGestureRecognizer] = [:]
 
     public init(configuration: GestureConfiguration) {
         self.configuration = configuration
@@ -78,6 +79,13 @@ public final class GestureRecognizer: @unchecked Sendable {
             releaseRecognizers[id] = ReleaseGestureRecognizer(id: id, rule: rule, kind: type)
         case .threeFinger(let id, let type, let rule):
             threeFingerRecognizers[id] = ThreeFingerGestureRecognizer(id: id, type: type, rule: rule)
+        case .fourFinger(let id, let type, let rule):
+            fourFingerRecognizers[id] = ThreeFingerGestureRecognizer(
+                id: id,
+                type: type,
+                rule: rule.recognitionRule(),
+                requiredFingerCount: 4
+            )
         }
     }
 
@@ -117,25 +125,39 @@ public final class GestureRecognizer: @unchecked Sendable {
             return releaseRecognizers[id]?.process(frame)
         case .threeFinger(let id, _, _):
             return threeFingerRecognizers[id]?.process(frame)
+        case .fourFinger(let id, _, _):
+            return fourFingerRecognizers[id]?.process(frame)
         }
     }
 
     private func processTimer(_ trigger: GestureRule, timestamp: TimeInterval) -> RecognizedGesture? {
-        guard case .threeFinger(let id, _, _) = trigger else { return nil }
-        return threeFingerRecognizers[id]?.processTimer(at: timestamp)
+        switch trigger {
+        case .threeFinger(let id, _, _):
+            return threeFingerRecognizers[id]?.processTimer(at: timestamp)
+        case .fourFinger(let id, _, _):
+            return fourFingerRecognizers[id]?.processTimer(at: timestamp)
+        default:
+            return nil
+        }
     }
 
     private func nextTimerDeadline(_ trigger: GestureRule) -> TimeInterval? {
-        guard case .threeFinger(let id, _, _) = trigger else { return nil }
-        return threeFingerRecognizers[id]?.nextTimerDeadline()
+        switch trigger {
+        case .threeFinger(let id, _, _):
+            return threeFingerRecognizers[id]?.nextTimerDeadline()
+        case .fourFinger(let id, _, _):
+            return fourFingerRecognizers[id]?.nextTimerDeadline()
+        default:
+            return nil
+        }
     }
 
     private func prioritized(_ gestures: [RecognizedGesture]) -> [RecognizedGesture] {
-        let threeFinger = gestures.filter { $0.kind.isThreeFingerGestureFamily }
-        guard let winner = threeFinger.max(by: { $0.kind.threeFingerPriority < $1.kind.threeFingerPriority }) else {
+        let families = gestures.filter { $0.kind.isMultiFingerGestureFamily }
+        guard let winner = families.max(by: { $0.kind.multiFingerPriority < $1.kind.multiFingerPriority }) else {
             return gestures
         }
-        return gestures.filter { !$0.kind.isThreeFingerGestureFamily } + [winner]
+        return gestures.filter { !$0.kind.isMultiFingerGestureFamily } + [winner]
     }
 
     private func evaluate(

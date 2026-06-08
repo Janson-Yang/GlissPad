@@ -23,7 +23,7 @@ extension ThreeFingerGestureRecognizer {
         guard !active.isEmpty else {
             return finishMovementOnRelease(frame, state: state, timing: rule.scale.triggerTiming)
         }
-        guard active.count == 3 else {
+        guard active.count == requiredFingerCount else {
             phase = .cancellingUntilRelease
             return nil
         }
@@ -56,7 +56,7 @@ extension ThreeFingerGestureRecognizer {
     }
 
     private func heuristicThumbDistance(in touches: [TouchPoint]) -> Double {
-        guard touches.count == 3,
+        guard touches.count == requiredFingerCount,
               let thumb = touches.max(by: { $0.size < $1.size }) else {
             return touches.averagePairwiseDistance()
         }

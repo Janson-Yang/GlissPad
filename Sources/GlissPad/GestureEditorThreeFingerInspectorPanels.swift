@@ -18,7 +18,7 @@ extension GestureEditorWindowController {
 
     private func threeFingerRows(for type: GestureTriggerType) -> [NSView] {
         switch type {
-        case .threeFingerTouch:
+        case .threeFingerTouch, .fourFingerTouch:
             return [
                 triggerFormRow("Touch event", threeFingerControls.touchEventPopup, controlWidth: 180),
                 triggerFormRow("Trigger timing", threeFingerControls.touchTimingPopup, controlWidth: 180),
@@ -29,7 +29,7 @@ extension GestureEditorWindowController {
                 triggerIndented(threeFingerControls.cancelOnPressButton),
                 triggerIndented(threeFingerControls.repeatWhileHoldingButton)
             ]
-        case .threeFingerTap:
+        case .threeFingerTap, .fourFingerTap:
             return [
                 triggerFormRow("Tap count", threeFingerControls.tapCountField),
                 triggerFormRow("Maximum tap ms", threeFingerControls.tapDurationField),
@@ -38,32 +38,41 @@ extension GestureEditorWindowController {
                 triggerIndented(threeFingerControls.requireNoPressButton)
             ]
         case .threeFingerPress:
-            return threeFingerPressRows()
+            return threeFingerPressRows(includePressureBias: true)
+        case .fourFingerPress:
+            return threeFingerPressRows(includePressureBias: false)
         case .threeFingerSwipe:
             return threeFingerSwipeRows()
+        case .fourFingerSwipe:
+            return fourFingerSwipeRows()
         case .threeFingerTipTap:
             return threeFingerTipTapRows()
+        case .fourFingerTipTap:
+            return fourFingerTipTapRows()
         case .threeFingerTipSwipe:
             return threeFingerTipSwipeRows()
-        case .thumbTwoFingerScale:
+        case .thumbTwoFingerScale, .thumbThreeFingerScale:
             return threeFingerScaleRows()
-        case .threeFingerDrawing:
+        case .threeFingerDrawing, .fourFingerDrawing:
             return threeFingerDrawingRows()
         default:
             return []
         }
     }
 
-    private func threeFingerPressRows() -> [NSView] {
-        [
+    private func threeFingerPressRows(includePressureBias: Bool) -> [NSView] {
+        var rows = [
             triggerFormRow("Press level", threeFingerControls.pressLevelPopup, controlWidth: 180),
-            triggerFormRow("Pressure bias", threeFingerControls.pressureBiasPopup, controlWidth: 220),
             triggerFormRow("Trigger on", threeFingerControls.pressTimingPopup, controlWidth: 180),
             triggerFormRow("Minimum pressure", threeFingerControls.pressMinimumField),
             triggerFormRow("Force pressure", threeFingerControls.pressForceField),
-            triggerFormRow("Bias threshold", threeFingerControls.pressBiasThresholdField),
             triggerIndented(threeFingerControls.fallbackWithoutPressureButton)
         ]
+        if includePressureBias {
+            rows.insert(triggerFormRow("Pressure bias", threeFingerControls.pressureBiasPopup, controlWidth: 220), at: 1)
+            rows.insert(triggerFormRow("Bias threshold", threeFingerControls.pressBiasThresholdField), at: 5)
+        }
+        return rows
     }
 
     private func threeFingerSwipeRows() -> [NSView] {
@@ -77,10 +86,32 @@ extension GestureEditorWindowController {
         ]
     }
 
+    private func fourFingerSwipeRows() -> [NSView] {
+        [
+            triggerFormRow("Direction", threeFingerControls.swipeDirectionPopup, controlWidth: 180),
+            triggerFormRow("Trigger timing", threeFingerControls.triggerTimingPopup, controlWidth: 180),
+            triggerFormRow("Minimum travel", threeFingerControls.swipeTravelField),
+            triggerFormRow("Minimum velocity", threeFingerControls.swipeVelocityField),
+            triggerFormRow("Direction tolerance", threeFingerControls.directionToleranceField)
+        ]
+    }
+
     private func threeFingerTipTapRows() -> [NSView] {
         [
             triggerFormRow("Tap finger", threeFingerControls.tipTapPositionPopup, controlWidth: 180),
             triggerFormRow("Position reference", threeFingerControls.tipTapReferencePopup, controlWidth: 180),
+            triggerFormRow("Tap count", threeFingerControls.tipTapCountField),
+            triggerFormRow("Maximum tap ms", threeFingerControls.tipTapDurationField),
+            triggerFormRow("Active movement", threeFingerControls.tipTapActiveMovementField),
+            triggerFormRow("Fixed movement", threeFingerControls.tipTapFixedMovementField),
+            triggerFormRow("Fixed hold ms", threeFingerControls.tipTapFixedHoldField)
+        ]
+    }
+
+    private func fourFingerTipTapRows() -> [NSView] {
+        [
+            triggerFormRow("Tap side", threeFingerControls.tipTapPositionPopup, controlWidth: 180),
+            triggerFormRow("Side reference", threeFingerControls.tipTapReferencePopup, controlWidth: 220),
             triggerFormRow("Tap count", threeFingerControls.tipTapCountField),
             triggerFormRow("Maximum tap ms", threeFingerControls.tipTapDurationField),
             triggerFormRow("Active movement", threeFingerControls.tipTapActiveMovementField),
@@ -133,7 +164,7 @@ extension GestureEditorWindowController {
 
     private func threeFingerRegionRows(for type: GestureTriggerType) -> [NSView] {
         switch type {
-        case .threeFingerSwipe, .threeFingerDrawing:
+        case .threeFingerSwipe, .threeFingerDrawing, .fourFingerSwipe, .fourFingerDrawing:
             return [makeSwipeRegionEditors(labelWidth: triggerFormLabelWidth)]
         default:
             return [makeRegionEditor(labelWidth: triggerFormLabelWidth)]

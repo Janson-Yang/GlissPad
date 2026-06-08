@@ -78,8 +78,8 @@ struct ThreeFingerCollectionState: Equatable {
         )
     }
 
-    mutating func record(frame: TouchFrame, active: [TouchPoint]) {
-        guard active.count == 3 else { return }
+    mutating func record(frame: TouchFrame, active: [TouchPoint], requiredFingerCount: Int) {
+        guard active.count == requiredFingerCount else { return }
         sawClick = sawClick || frame.hasRecentClick || frame.clickGeneration > clickBaseline
         maximumObservedPressure = max(maximumObservedPressure, active.maximumPressure())
     }

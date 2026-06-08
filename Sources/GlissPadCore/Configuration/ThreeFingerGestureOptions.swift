@@ -124,11 +124,13 @@ public enum ThreeFingerActiveFinger: String, CaseIterable, Codable, Sendable {
 }
 
 public enum ThreeFingerFingerReference: String, CaseIterable, Codable, Sendable {
+    case relativeToFixedGroup
     case touchOrder
     case trackpad
 
     public var displayName: String {
         switch self {
+        case .relativeToFixedGroup: return "Relative to Fixed Fingers"
         case .touchOrder: return "Touch Order"
         case .trackpad: return "Trackpad Position"
         }
@@ -186,4 +188,3 @@ public enum ThreeFingerDrawingRecognitionMode: String, CaseIterable, Codable, Se
         }
     }
 }
-

@@ -92,7 +92,7 @@ extension GestureEditorWindowController {
         configureThreeFingerCheckBoxes()
     }
 
-    private func configure<T>(_ popup: NSPopUpButton, values: [T]) where T: DisplayNamed {
+    func configure<T>(_ popup: NSPopUpButton, values: [T]) where T: DisplayNamed {
         popup.removeAllItems()
         popup.controlSize = .large
         popup.addItems(withTitles: values.map(\.displayName))
@@ -114,7 +114,14 @@ extension GestureEditorWindowController {
     }
 
     private func visibleFingerReferences(for selected: ThreeFingerFingerReference) -> [ThreeFingerFingerReference] {
-        selected == .touchOrder ? [.trackpad, .touchOrder] : [.trackpad]
+        switch selected {
+        case .touchOrder:
+            return [.trackpad, .touchOrder]
+        case .relativeToFixedGroup:
+            return [.trackpad, .relativeToFixedGroup]
+        case .trackpad:
+            return [.trackpad]
+        }
     }
 
     private func visibleTipSwipeActiveFingers(
@@ -162,3 +169,5 @@ extension ThreeFingerScaleDirection: DisplayNamed {}
 extension ThreeFingerThumbDetectionMode: DisplayNamed {}
 extension ThreeFingerDrawingPathSource: DisplayNamed {}
 extension ThreeFingerDrawingRecognitionMode: DisplayNamed {}
+extension FourFingerTipTapSide: DisplayNamed {}
+extension FourFingerTipTapSideReference: DisplayNamed {}

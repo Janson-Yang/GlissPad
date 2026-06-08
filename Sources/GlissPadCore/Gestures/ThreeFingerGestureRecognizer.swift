@@ -4,14 +4,16 @@ final class ThreeFingerGestureRecognizer {
     let id: String
     let type: GestureTriggerType
     let rule: ThreeFingerGestureRule
+    let requiredFingerCount: Int
     var phase = ThreeFingerRecognitionPhase.idle
     var pendingTap: ThreeFingerPendingTap?
     var lastTriggeredAt: TimeInterval?
 
-    init(id: String, type: GestureTriggerType, rule: ThreeFingerGestureRule) {
+    init(id: String, type: GestureTriggerType, rule: ThreeFingerGestureRule, requiredFingerCount: Int = 3) {
         self.id = id
         self.type = type
         self.rule = rule
+        self.requiredFingerCount = requiredFingerCount
     }
 
     func process(_ frame: TouchFrame) -> RecognizedGesture? {
@@ -21,21 +23,23 @@ final class ThreeFingerGestureRecognizer {
         }
         expirePendingTapIfNeeded(at: frame.timestamp)
         switch type {
-        case .threeFingerTouch:
+        case .threeFingerTouch, .fourFingerTouch:
             return processTouch(frame)
-        case .threeFingerTap:
+        case .threeFingerTap, .fourFingerTap:
             return processTap(frame)
-        case .threeFingerPress:
+        case .threeFingerPress, .fourFingerPress:
             return processPress(frame)
-        case .threeFingerSwipe:
+        case .threeFingerSwipe, .fourFingerSwipe:
             return processSwipe(frame)
         case .threeFingerTipTap:
             return processTipTap(frame)
         case .threeFingerTipSwipe:
             return processTipSwipe(frame)
-        case .thumbTwoFingerScale:
+        case .fourFingerTipTap:
+            return processTipTap(frame)
+        case .thumbTwoFingerScale, .thumbThreeFingerScale:
             return processScale(frame)
-        case .threeFingerDrawing:
+        case .threeFingerDrawing, .fourFingerDrawing:
             return processDrawing(frame)
         default:
             return nil
@@ -48,7 +52,7 @@ final class ThreeFingerGestureRecognizer {
             return nil
         }
         switch type {
-        case .threeFingerTouch:
+        case .threeFingerTouch, .fourFingerTouch:
             return processTouchTimer(at: timestamp)
         default:
             return nil
@@ -58,7 +62,7 @@ final class ThreeFingerGestureRecognizer {
     func nextTimerDeadline() -> TimeInterval? {
         guard rule.isEnabled else { return nil }
         switch type {
-        case .threeFingerTouch:
+        case .threeFingerTouch, .fourFingerTouch:
             return nextTouchDeadline()
         default:
             return nil
@@ -71,7 +75,7 @@ final class ThreeFingerGestureRecognizer {
             phase = .idle
             return
         }
-        if isLongTouch, active.count < 3 {
+        if isLongTouch, active.count < requiredFingerCount {
             phase = .collecting(currentCollection(frame: frame, active: active))
             return
         }
@@ -80,7 +84,7 @@ final class ThreeFingerGestureRecognizer {
             phase = .cancellingUntilRelease
             return
         }
-        guard active.count == 3 else {
+        guard active.count == requiredFingerCount else {
             phase = .collecting(collection)
             return
         }
@@ -125,13 +129,13 @@ final class ThreeFingerGestureRecognizer {
     var stableFingerDuration: TimeInterval { TimeInterval(rule.common.minStableFingerCountDurationMilliseconds) / 1000 }
 
     private var effectiveCommonTimeGap: TimeInterval {
-        let needsRelaxedCollection = type == .threeFingerDrawing
-            || (type == .threeFingerTouch && rule.touch.event == .longTouch)
+        let needsRelaxedCollection = (type == .threeFingerDrawing || type == .fourFingerDrawing)
+            || ((type == .threeFingerTouch || type == .fourFingerTouch) && rule.touch.event == .longTouch)
         return needsRelaxedCollection ? max(commonTimeGap, 0.35) : commonTimeGap
     }
 
     private var isLongTouch: Bool {
-        type == .threeFingerTouch && rule.touch.event == .longTouch
+        (type == .threeFingerTouch || type == .fourFingerTouch) && rule.touch.event == .longTouch
     }
 
     private func currentCollection(frame: TouchFrame, active: [TouchPoint]) -> ThreeFingerCollectionState {
@@ -141,7 +145,7 @@ final class ThreeFingerGestureRecognizer {
         } else {
             collection = ThreeFingerCollectionState(frame: frame)
         }
-        collection.record(frame: frame, active: active)
+        collection.record(frame: frame, active: active, requiredFingerCount: requiredFingerCount)
         return collection
     }
 

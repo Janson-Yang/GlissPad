@@ -50,8 +50,8 @@ extension ThreeFingerGestureRecognizer {
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
         let active = frame.activeTouches
-        if active.count < 3 { return beginTouchRelease(frame, state: &state) }
-        guard active.count == 3 else {
+        if active.count < requiredFingerCount { return beginTouchRelease(frame, state: &state) }
+        guard active.count == requiredFingerCount else {
             phase = .cancellingUntilRelease
             return nil
         }
@@ -71,7 +71,7 @@ extension ThreeFingerGestureRecognizer {
         _ frame: TouchFrame,
         collection: ThreeFingerCollectionState
     ) -> RecognizedGesture? {
-        guard frame.activeTouches.count < 3,
+        guard frame.activeTouches.count < requiredFingerCount,
               let stableFrame = qualifiedStableTouchFrame(collection, releaseTimestamp: frame.timestamp),
               let touches = collection.threeFingerTouches else { return nil }
         var state = ThreeFingerTrackingState(frame: stableFrame, touches: touches)
@@ -100,7 +100,7 @@ extension ThreeFingerGestureRecognizer {
             var resumed = state
             resumed.releaseStartedAt = nil
             phase = .tracking(resumed)
-        } else if frame.activeTouches.count >= 3 {
+        } else if frame.activeTouches.count >= requiredFingerCount {
             phase = .cancellingUntilRelease
         } else {
             phase = .releasing(state)
@@ -147,7 +147,7 @@ extension ThreeFingerGestureRecognizer {
 
     private func canResumeLongTouch(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> Bool {
         guard rule.touch.event == .longTouch,
-              frame.activeTouches.count == 3,
+              frame.activeTouches.count == requiredFingerCount,
               let releaseStartedAt = state.releaseStartedAt,
               frame.timestamp - releaseStartedAt <= longTouchReleaseResumeWindow,
               !touchMovedBeyondTolerance(frame.activeTouches, state: state) else { return false }

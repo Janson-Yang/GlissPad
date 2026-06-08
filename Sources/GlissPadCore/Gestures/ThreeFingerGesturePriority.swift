@@ -13,5 +13,28 @@ extension GestureTriggerType {
         default: return 0
         }
     }
-}
 
+    var fourFingerPriority: Int {
+        switch self {
+        case .fourFingerPress: return 90
+        case .thumbThreeFingerScale: return 80
+        case .fourFingerDrawing: return 70
+        case .fourFingerSwipe: return 50
+        case .fourFingerTipTap: return 40
+        case .fourFingerTouch:
+            return 10
+        case .fourFingerTap:
+            return 20
+        default:
+            return 0
+        }
+    }
+
+    var multiFingerPriority: Int {
+        isFourFingerGestureFamily ? fourFingerPriority : threeFingerPriority
+    }
+
+    var isMultiFingerGestureFamily: Bool {
+        isThreeFingerGestureFamily || isFourFingerGestureFamily
+    }
+}

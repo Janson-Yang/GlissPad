@@ -17,6 +17,7 @@ public enum GestureRule: Codable, Equatable, Sendable {
     case hold(id: String, type: GestureTriggerType, rule: HoldGestureRule)
     case release(id: String, type: GestureTriggerType, rule: ReleaseGestureRule)
     case threeFinger(id: String, type: GestureTriggerType, rule: ThreeFingerGestureRule)
+    case fourFinger(id: String, type: GestureTriggerType, rule: FourFingerGestureRule)
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -37,6 +38,7 @@ public enum GestureRule: Codable, Equatable, Sendable {
         case hold
         case release
         case threeFinger
+        case fourFinger
     }
 
     public var id: String {
@@ -45,7 +47,8 @@ public enum GestureRule: Codable, Equatable, Sendable {
              .shape(let id, _, _), .tap(let id, _, _), .oneFingerPress(let id, _, _), .customPath(let id, _, _),
              .touchStart(let id, _, _), .tipTap(let id, _, _), .transform(let id, _, _),
              .multiFingerSwipe(let id, _, _), .press(let id, _, _), .swipe(let id, _, _),
-             .hold(let id, _, _), .release(let id, _, _), .threeFinger(let id, _, _):
+             .hold(let id, _, _), .release(let id, _, _), .threeFinger(let id, _, _),
+             .fourFinger(let id, _, _):
             return id
         }
     }
@@ -56,7 +59,8 @@ public enum GestureRule: Codable, Equatable, Sendable {
              .shape(_, let type, _), .tap(_, let type, _), .oneFingerPress(_, let type, _), .customPath(_, let type, _),
              .touchStart(_, let type, _), .tipTap(_, let type, _), .transform(_, let type, _),
              .multiFingerSwipe(_, let type, _), .press(_, let type, _), .swipe(_, let type, _),
-             .hold(_, let type, _), .release(_, let type, _), .threeFinger(_, let type, _):
+             .hold(_, let type, _), .release(_, let type, _), .threeFinger(_, let type, _),
+             .fourFinger(_, let type, _):
             return type
         }
     }
@@ -125,6 +129,13 @@ public enum GestureRule: Codable, Equatable, Sendable {
                 type: type,
                 rule: try container.decode(ThreeFingerGestureRule.self, forKey: .threeFinger)
             )
+        case .fourFingerTouch, .fourFingerTap, .fourFingerPress, .fourFingerSwipe,
+             .thumbThreeFingerScale, .fourFingerTipTap, .fourFingerDrawing:
+            self = .fourFinger(
+                id: id,
+                type: type,
+                rule: try container.decode(FourFingerGestureRule.self, forKey: .fourFinger)
+            )
         }
     }
 
@@ -165,6 +176,8 @@ public enum GestureRule: Codable, Equatable, Sendable {
             try container.encode(rule, forKey: .release)
         case .threeFinger(_, _, let rule):
             try container.encode(rule, forKey: .threeFinger)
+        case .fourFinger(_, _, let rule):
+            try container.encode(rule, forKey: .fourFinger)
         }
     }
 
@@ -255,6 +268,8 @@ public enum GestureRule: Codable, Equatable, Sendable {
             try rule.validate(name: "\(name).release")
         case .threeFinger(_, let type, let rule):
             try rule.validate(name: "\(name).threeFinger", type: type)
+        case .fourFinger(_, let type, let rule):
+            try rule.validate(name: "\(name).fourFinger", type: type)
         }
     }
 

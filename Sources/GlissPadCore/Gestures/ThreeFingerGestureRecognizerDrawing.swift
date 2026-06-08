@@ -22,8 +22,8 @@ extension ThreeFingerGestureRecognizer {
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
         let active = frame.activeTouches
-        if active.count < 3 { return finishDrawingDuringRelease(frame, state: &state) }
-        guard active.count == 3 else {
+        if active.count < requiredFingerCount { return finishDrawingDuringRelease(frame, state: &state) }
+        guard active.count == requiredFingerCount else {
             phase = .cancellingUntilRelease
             return nil
         }
@@ -69,7 +69,7 @@ extension ThreeFingerGestureRecognizer {
         _ frame: TouchFrame,
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
-        guard frame.activeTouches.count != 3 else {
+        guard frame.activeTouches.count != requiredFingerCount else {
             return updateDrawingTracking(frame, state: &state)
         }
         return finishDrawingDuringRelease(frame, state: &state)

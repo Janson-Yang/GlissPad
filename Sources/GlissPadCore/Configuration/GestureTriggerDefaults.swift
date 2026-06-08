@@ -52,6 +52,9 @@ public extension GestureTriggerType {
         case .threeFingerTouch, .threeFingerTap, .threeFingerPress, .threeFingerSwipe,
              .threeFingerTipTap, .threeFingerTipSwipe, .thumbTwoFingerScale, .threeFingerDrawing:
             return defaultThreeFingerTrigger(id: id, ordinal: ordinal)
+        case .fourFingerTouch, .fourFingerTap, .fourFingerPress, .fourFingerSwipe,
+             .thumbThreeFingerScale, .fourFingerTipTap, .fourFingerDrawing:
+            return defaultFourFingerTrigger(id: id, ordinal: ordinal)
         }
     }
 }

@@ -24,7 +24,7 @@ extension ThreeFingerGestureRecognizer {
         _ frame: TouchFrame,
         collection: ThreeFingerCollectionState
     ) -> RecognizedGesture? {
-        guard frame.activeTouches.count < 3,
+        guard frame.activeTouches.count < requiredFingerCount,
               let stableFrame = qualifiedStableTouchFrame(collection, releaseTimestamp: frame.timestamp),
               let touches = collection.threeFingerTouches else { return nil }
         let state = ThreeFingerTrackingState(frame: stableFrame, touches: touches)
@@ -36,8 +36,8 @@ extension ThreeFingerGestureRecognizer {
         state: inout ThreeFingerTrackingState
     ) -> RecognizedGesture? {
         let active = frame.activeTouches
-        if active.count < 3 { return finishTapOnRelease(frame, state: state) }
-        guard active.count == 3, !tapShouldCancel(frame: frame, state: state, active: active) else {
+        if active.count < requiredFingerCount { return finishTapOnRelease(frame, state: state) }
+        guard active.count == requiredFingerCount, !tapShouldCancel(frame: frame, state: state, active: active) else {
             phase = .cancellingUntilRelease
             return nil
         }

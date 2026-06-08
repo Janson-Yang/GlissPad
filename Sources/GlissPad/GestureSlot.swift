@@ -136,6 +136,7 @@ struct GestureSlot: Hashable {
         case .hold(_, _, let rule): return rule.isEnabled
         case .release(_, _, let rule): return rule.isEnabled
         case .threeFinger(_, _, let rule): return rule.isEnabled
+        case .fourFinger(_, _, let rule): return rule.isEnabled
         case nil: return false
         }
     }

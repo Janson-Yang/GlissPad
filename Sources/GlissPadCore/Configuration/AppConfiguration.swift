@@ -85,6 +85,8 @@ public struct AppConfiguration: Codable, Equatable, Sendable {
                 rule = migrateThreeFingerTipSwipeVelocity(rule)
             }
             return .threeFinger(id: id, type: type, rule: rule)
+        case .fourFinger:
+            return trigger
         case .oneFinger, .circle, .shape, .tap, .customPath, .touchStart, .tipTap, .swipe,
              .multiFingerSwipe, .release:
             return trigger

@@ -82,7 +82,7 @@ extension ThreeFingerGestureRecognizer {
             phase = .tipBase(base)
             return nil
         }
-        guard activeFingerAllowed(activeTouch, touches: active, swipe: swipe) else {
+        guard activeFingerAllowed(activeTouch, touches: active, base: base, swipe: swipe) else {
             phase = .cancellingUntilRelease
             return nil
         }
@@ -119,8 +119,8 @@ extension ThreeFingerGestureRecognizer {
             phase = active.isEmpty ? .idle : .cancellingUntilRelease
             return nil
         }
-        if active.count == 2 { return finishTipTap(frame, state: state) }
-        guard active.count == 3,
+        if active.count == state.base.anchors.count { return finishTipTap(frame, state: state) }
+        guard active.count == state.base.anchors.count + 1,
               let tip = active.first(where: { $0.id == state.activeID }),
               tip.position.distance(to: state.activeAnchor) <= rule.tipTap.maximumActiveFingerMovement else {
             phase = .cancellingUntilRelease
@@ -188,7 +188,7 @@ extension ThreeFingerGestureRecognizer {
         let fixedMovements = movements.dropFirst()
         guard fixedMovements.count == rule.tipSwipe.fixedFingers,
               fixedMovements.allSatisfy({ $0.distance <= rule.tipSwipe.maximumFixedFingerMovement }),
-              activeFingerAllowed(activeMovement.touch, touches: touches, swipe: true) else {
+              activeFingerAllowed(activeMovement.touch, touches: touches, base: nil, swipe: true) else {
             return nil
         }
         let base = ThreeFingerTipBase(
@@ -229,9 +229,17 @@ extension ThreeFingerGestureRecognizer {
         }
     }
 
-    private func activeFingerAllowed(_ touch: TouchPoint, touches: [TouchPoint], swipe: Bool) -> Bool {
+    private func activeFingerAllowed(
+        _ touch: TouchPoint,
+        touches: [TouchPoint],
+        base: ThreeFingerTipBase?,
+        swipe: Bool
+    ) -> Bool {
         let selected = swipe ? rule.tipSwipe.activeFinger : rule.tipTap.tapPosition
         let reference = swipe ? rule.tipSwipe.activeFingerReference : rule.tipTap.positionReference
+        if reference == .relativeToFixedGroup {
+            return fixedGroupSideAllows(touch, touches: touches, base: base, selected: selected)
+        }
         guard selected != .auto, let index = activeFingerIndex(selected, touchCount: touches.count) else {
             return selected == .auto
         }
@@ -254,6 +262,28 @@ extension ThreeFingerGestureRecognizer {
     ) -> [Int] {
         if reference == .trackpad { return touches.sortedByHorizontalPosition().map(\.id) }
         return touches.map(\.id)
+    }
+
+    private func fixedGroupSideAllows(
+        _ touch: TouchPoint,
+        touches: [TouchPoint],
+        base: ThreeFingerTipBase?,
+        selected: ThreeFingerActiveFinger
+    ) -> Bool {
+        guard selected != .auto else { return true }
+        guard let base else { return false }
+        let fixedTouches = touches.filter { base.anchors[$0.id] != nil }
+        guard !fixedTouches.isEmpty else { return false }
+        let xs = fixedTouches.map(\.position.x)
+        guard let minX = xs.min(), let maxX = xs.max() else { return false }
+        switch selected {
+        case .left:
+            return touch.position.x < minX
+        case .right:
+            return touch.position.x > maxX
+        case .auto, .middle:
+            return false
+        }
     }
 }
 

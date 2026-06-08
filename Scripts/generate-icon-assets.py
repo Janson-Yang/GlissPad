@@ -57,6 +57,10 @@ def dots(count: int, y: float = 23, opacity: float = 1) -> str:
     return "".join(dot(start + index * 8, y, opacity=opacity) for index in range(count))
 
 
+def four_dots(y: float = 24, opacity: float = 1) -> str:
+    return "".join(dot(x, y, 1.9, opacity=opacity) for x in (7, 13, 19, 25))
+
+
 def tap(count: int) -> str:
     icons = []
     start = 16 - (count - 1) * 4
@@ -140,6 +144,43 @@ def drawing(count: int) -> str:
     return dots(count, y=25, opacity=0.45) + path("M7 18 C11 7 16 27 21 13 C23 8 25 12 25 18")
 
 
+def four_finger_tap() -> str:
+    fingers = []
+    for x in (5, 12.5, 20, 27.5):
+        fingers.append(path(f"M{x - 2.8:g} 12 C{x - 2.8:g} 8 {x + 2.8:g} 8 {x + 2.8:g} 12 "
+                            f"L{x + 2.8:g} 16 C{x + 2.8:g} 20 {x - 2.8:g} 20 {x - 2.8:g} 16 Z", 1.6))
+        fingers.append(path(f"M{x - 2.8:g} 24 C{x - 1.2:g} 26 {x + 1.2:g} 26 {x + 2.8:g} 24", 1.4))
+    return "".join(fingers)
+
+
+def four_finger_touch() -> str:
+    return four_dots(y=24) + arrow(16, 8, 16, 17)
+
+
+def four_finger_press() -> str:
+    return four_dots(y=24) + path("M6 13 C10 8 22 8 26 13") + path("M9 16 C12 13.5 20 13.5 23 16", 1.8)
+
+
+def four_finger_swipe() -> str:
+    return four_dots(y=25) + arrow(7, 12, 25, 12)
+
+
+def thumb_three_finger_scale() -> str:
+    thumb = ellipse(7.5, 22, 4.2, 3, -25)
+    fingers = dot(20, 8.5, 1.8) + dot(25, 15.5, 1.8) + dot(21, 23, 1.8)
+    return thumb + fingers + double_arrow(12.5, 19, 22, 14.5, 1.25, 2.6)
+
+
+def four_finger_tip_tap() -> str:
+    fixed = "".join(circle(x, 24, 1.8, 1.35) for x in (8, 16, 24))
+    tapping = path("M13 7 C13 4.5 19 4.5 19 7 L19 11.5 C19 14.5 13 14.5 13 11.5 Z", 1.7)
+    return fixed + tapping + arrow(16, 15, 16, 21.5, 1.6, 3) + dot(16, 24, 1.8)
+
+
+def four_finger_drawing() -> str:
+    return four_dots(y=25, opacity=0.45) + path("M6.5 18 C10 7 14 26 18 14 C21 6 23 14 26 10", 2)
+
+
 def custom_path() -> str:
     anchors = dot(7, 22, 2) + dot(16, 10, 2) + dot(25, 17, 2)
     route = path("M7 22 C9 15 12 10 16 10 C20 10 22 17 25 17", 2.2)
@@ -185,6 +226,7 @@ ICONS: dict[str, str] = {
     "category-one-finger": category(1),
     "category-two-finger": category(2),
     "category-three-finger": category(3),
+    "category-four-finger": category(4),
     "action-script": action_icon("script"),
     "action-keyboard": action_icon("keyboard"),
     "action-hud": action_icon("hud"),
@@ -221,6 +263,13 @@ ICONS: dict[str, str] = {
     "trigger-three-finger-tip-swipe": tip_swipe(3),
     "trigger-thumb-two-finger-scale": thumb_scale(),
     "trigger-three-finger-drawing": drawing(3),
+    "trigger-four-finger-touch": four_finger_touch(),
+    "trigger-four-finger-tap": four_finger_tap(),
+    "trigger-four-finger-press": four_finger_press(),
+    "trigger-four-finger-swipe": four_finger_swipe(),
+    "trigger-thumb-three-finger-scale": thumb_three_finger_scale(),
+    "trigger-four-finger-tip-tap": four_finger_tip_tap(),
+    "trigger-four-finger-drawing": four_finger_drawing(),
 }
 
 def document(body: str) -> str:
