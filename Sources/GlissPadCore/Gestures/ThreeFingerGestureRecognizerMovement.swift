@@ -67,7 +67,7 @@ extension ThreeFingerGestureRecognizer {
             && regionContains(rule.common.endRegion, touches: touches)
             && directionMatches(
                 dx: vector.dx,
-                dy: vector.dy,
+                dy: -vector.dy,
                 direction: rule.swipe.direction,
                 toleranceDegrees: rule.swipe.directionToleranceDegrees
             )

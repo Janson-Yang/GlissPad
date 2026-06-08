@@ -46,6 +46,30 @@ final class FourFingerGestureRecognizerTests: XCTestCase {
         XCTAssertEqual(gestures.map(\.kind), [.fourFingerSwipe])
     }
 
+    func testSwipeUpUsesTrackpadUpDirection() {
+        var rule = fourFingerRule(.fourFingerSwipe)
+        rule.swipe = ThreeFingerSwipeOptions(direction: .up, minimumTravel: 0.16, minimumVelocity: 0.5)
+        let recognizer = recognizer(.fourFingerSwipe, rule: rule)
+
+        XCTAssertTrue(recognizer.process(frame(touches: fourTouches(at: 0.5, 0.25), time: 1.0)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: fourTouches(at: 0.5, 0.25), time: 1.05)).isEmpty)
+        let gestures = recognizer.process(frame(touches: fourTouches(at: 0.5, 0.55), time: 1.22))
+
+        XCTAssertEqual(gestures.map(\.kind), [.fourFingerSwipe])
+    }
+
+    func testSwipeDownUsesTrackpadDownDirection() {
+        var rule = fourFingerRule(.fourFingerSwipe)
+        rule.swipe = ThreeFingerSwipeOptions(direction: .down, minimumTravel: 0.16, minimumVelocity: 0.5)
+        let recognizer = recognizer(.fourFingerSwipe, rule: rule)
+
+        XCTAssertTrue(recognizer.process(frame(touches: fourTouches(at: 0.5, 0.55), time: 1.0)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: fourTouches(at: 0.5, 0.55), time: 1.05)).isEmpty)
+        let gestures = recognizer.process(frame(touches: fourTouches(at: 0.5, 0.25), time: 1.22))
+
+        XCTAssertEqual(gestures.map(\.kind), [.fourFingerSwipe])
+    }
+
     func testScaleTriggersOnFourFingerSpread() {
         var rule = fourFingerRule(.thumbThreeFingerScale)
         rule.scale = ThreeFingerScaleOptions(direction: .spreadOut, minimumScaleDelta: 0.18)
