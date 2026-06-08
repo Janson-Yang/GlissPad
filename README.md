@@ -21,8 +21,8 @@
 
 - Native macOS editor for triggers, actions, parameters, workflow testing, and
   drag reordering.
-- One-finger, two-finger, and three-finger trigger families with categorized
-  picker menus and custom SVG icons.
+- One-finger, two-finger, three-finger, and four-finger trigger families with
+  categorized picker menus and custom SVG icons.
 - Ordered action workflows. Actions run from top to bottom and stop on failure.
 - AppleScript, shell script, keyboard shortcut, test HUD, and latency actions.
 - Keyboard shortcut timing controls for key hold duration and post-release
@@ -44,6 +44,8 @@ GlissPad currently supports these trigger groups:
   rotate left/right, free swipe, and region swipe.
 - **Three fingers:** touch, tap, press, swipe, TipTap, TipSwipe,
   thumb + two fingers pinch/spread, and drawing recognition.
+- **Four fingers:** touch, tap, press, swipe, TipTap,
+  thumb + three fingers pinch/spread, and drawing recognition.
 - **Release:** run a workflow when the last finger is released.
 
 Several trigger types expose advanced parameters such as timing, movement
@@ -126,13 +128,13 @@ Scripts/package-macos-dmg.sh
 The default output is:
 
 ```text
-dist/GlissPad-v1.1.0.dmg
+dist/GlissPad-v1.2.0.dmg
 ```
 
 Set `GLISSPAD_VERSION` to build a different versioned artifact:
 
 ```sh
-GLISSPAD_VERSION=1.1.1 Scripts/package-macos-dmg.sh
+GLISSPAD_VERSION=1.2.1 Scripts/package-macos-dmg.sh
 ```
 
 Set `GLISSPAD_CODESIGN_IDENTITY` to choose a signing identity. If it is not set,

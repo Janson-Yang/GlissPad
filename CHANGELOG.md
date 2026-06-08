@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.0] - 2026-06-08
+
+### Added
+
+- Added a full four-finger gesture family:
+  - Four Finger Touch
+  - Four Finger Tap
+  - Four Finger Press
+  - Four Finger Swipe
+  - Thumb + Three Fingers Pinch / Spread
+  - Four Finger TipTap
+  - Four Finger Drawing
+- Added four-finger parameter panels, picker entries, trigger-list rendering,
+  and workflow persistence.
+- Added four-finger custom SVG icons, including clearer four-finger scale and
+  TipTap artwork.
+
 ## [1.1.0] - 2026-06-05
 
 ### Added

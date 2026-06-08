@@ -2,8 +2,8 @@
 set -euo pipefail
 
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-version="${GLISSPAD_VERSION:-1.1.0}"
-build_number="${GLISSPAD_BUILD_NUMBER:-2}"
+version="${GLISSPAD_VERSION:-1.2.0}"
+build_number="${GLISSPAD_BUILD_NUMBER:-3}"
 dist_dir="${project_root}/dist"
 staging_root="${project_root}/.build/dmg"
 staging_dir="${staging_root}/GlissPad-${version}"
