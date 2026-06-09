@@ -84,8 +84,12 @@ final class ThreeFingerGestureRecognizer {
             phase = .cancellingUntilRelease
             return
         }
-        guard active.count == requiredFingerCount else {
+        guard active.count >= requiredFingerCount else {
             phase = .collecting(collection)
+            return
+        }
+        guard acceptsCurrentTouchCount(active.count) else {
+            phase = .cancellingUntilRelease
             return
         }
         guard regionContains(region, touches: active) else {
@@ -132,12 +136,17 @@ final class ThreeFingerGestureRecognizer {
         let needsRelaxedCollection = (type == .threeFingerDrawing || type == .fourFingerDrawing || type == .fiveFingerDrawing)
             || ((type == .threeFingerTouch || type == .fourFingerTouch || type == .fiveFingerTouch)
                 && rule.touch.event == .longTouch)
+            || type == .fiveFingerTouch
         return needsRelaxedCollection ? max(commonTimeGap, 0.35) : commonTimeGap
     }
 
     private var isLongTouch: Bool {
         (type == .threeFingerTouch || type == .fourFingerTouch || type == .fiveFingerTouch)
             && rule.touch.event == .longTouch
+    }
+
+    func acceptsCurrentTouchCount(_ count: Int) -> Bool {
+        count == requiredFingerCount || (type == .fiveFingerTouch && count > requiredFingerCount)
     }
 
     private func currentCollection(frame: TouchFrame, active: [TouchPoint]) -> ThreeFingerCollectionState {

@@ -51,7 +51,7 @@ extension ThreeFingerGestureRecognizer {
     ) -> RecognizedGesture? {
         let active = frame.activeTouches
         if active.count < requiredFingerCount { return beginTouchRelease(frame, state: &state) }
-        guard active.count == requiredFingerCount else {
+        guard acceptsCurrentTouchCount(active.count) else {
             phase = .cancellingUntilRelease
             return nil
         }
@@ -140,6 +140,7 @@ extension ThreeFingerGestureRecognizer {
         state: ThreeFingerTrackingState,
         active: [TouchPoint]
     ) -> Bool {
+        guard rule.touch.event != .touchEnd else { return false }
         let moved = touchMovedBeyondTolerance(active, state: state)
         let pressed = rule.touch.cancelOnPress && touchPressed(frame, state: state)
         return (rule.touch.cancelOnMovement && moved) || pressed
@@ -147,7 +148,7 @@ extension ThreeFingerGestureRecognizer {
 
     private func canResumeLongTouch(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> Bool {
         guard rule.touch.event == .longTouch,
-              frame.activeTouches.count == requiredFingerCount,
+              acceptsCurrentTouchCount(frame.activeTouches.count),
               let releaseStartedAt = state.releaseStartedAt,
               frame.timestamp - releaseStartedAt <= longTouchReleaseResumeWindow,
               !touchMovedBeyondTolerance(frame.activeTouches, state: state) else { return false }
@@ -163,7 +164,10 @@ extension ThreeFingerGestureRecognizer {
     }
 
     private func touchPressed(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> Bool {
-        touchPressureCancels(frame)
+        if type == .fiveFingerTouch && rule.touch.event == .longTouch {
+            return frame.hasRecentClick || frame.clickGeneration > state.clickBaseline
+        }
+        return touchPressureCancels(frame)
     }
 
     private func repeatTouchStartIfNeeded(
