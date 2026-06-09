@@ -103,13 +103,13 @@ public struct WholeHandTapOptions: Codable, Equatable, Sendable {
         nominalContactCount: Int = 11,
         minContactCount: Int = 8,
         maxContactCount: Int? = nil,
-        requireLargeContactArea: Bool = true,
+        requireLargeContactArea: Bool = false,
         minTotalContactArea: Double = 1.4,
         minAverageContactArea: Double = 0.14,
-        requirePalmLikeContact: Bool = true,
-        palmDetectionMode: WholeHandPalmDetectionMode = .heuristic,
+        requirePalmLikeContact: Bool = false,
+        palmDetectionMode: WholeHandPalmDetectionMode = .disabledFallback,
         minTapMilliseconds: Int = 30,
-        maxTapMilliseconds: Int = 260,
+        maxTapMilliseconds: Int = 700,
         maximumMovement: Double = 0.18,
         region: NormalizedRegion? = nil
     ) {

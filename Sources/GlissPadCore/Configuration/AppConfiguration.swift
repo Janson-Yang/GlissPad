@@ -88,6 +88,9 @@ public struct AppConfiguration: Codable, Equatable, Sendable {
         case .fiveAndMoreFinger(let id, .fiveFingerTap, var rule):
             rule = migrateFiveFingerTapTiming(rule)
             return .fiveAndMoreFinger(id: id, type: .fiveFingerTap, rule: rule)
+        case .fiveAndMoreFinger(let id, .wholeHandTap, var rule):
+            rule = migrateWholeHandTapDefaults(rule)
+            return .fiveAndMoreFinger(id: id, type: .wholeHandTap, rule: rule)
         case .fourFinger, .fiveAndMoreFinger:
             return trigger
         case .oneFinger, .circle, .shape, .tap, .customPath, .touchStart, .tipTap, .swipe,
@@ -181,6 +184,27 @@ public struct AppConfiguration: Codable, Equatable, Sendable {
             rule.tap.maximumInterTapIntervalMilliseconds = 320
         }
         return rule
+    }
+
+    private func migrateWholeHandTapDefaults(_ rule: FiveAndMoreFingerGestureRule) -> FiveAndMoreFingerGestureRule {
+        var rule = rule
+        if isLegacyValue(Double(rule.wholeHandTap.maxTapMilliseconds), in: [260]) {
+            rule.wholeHandTap.maxTapMilliseconds = 700
+        }
+        if usesLegacyWholeHandAreaDefaults(rule.wholeHandTap) {
+            rule.wholeHandTap.requireLargeContactArea = false
+            rule.wholeHandTap.requirePalmLikeContact = false
+            rule.wholeHandTap.palmDetectionMode = .disabledFallback
+        }
+        return rule
+    }
+
+    private func usesLegacyWholeHandAreaDefaults(_ options: WholeHandTapOptions) -> Bool {
+        options.requireLargeContactArea
+            && options.requirePalmLikeContact
+            && options.palmDetectionMode == .heuristic
+            && isLegacyValue(options.minTotalContactArea, in: [1.4])
+            && isLegacyValue(options.minAverageContactArea, in: [0.14])
     }
 
     private func migrateCornerForceTouch(_ rule: PressGestureRule) -> PressGestureRule {

@@ -23,6 +23,8 @@ final class WholeHandTapGestureRecognizer {
             startTrackingIfPossible(frame)
         case .tracking(var state):
             return updateTracking(frame, state: &state)
+        case .releasing(var state):
+            return updateRelease(frame, state: &state)
         case .cancellingUntilRelease:
             if frame.activeTouches.isEmpty { phase = .idle }
         }
@@ -39,10 +41,8 @@ final class WholeHandTapGestureRecognizer {
 
     private func updateTracking(_ frame: TouchFrame, state: inout WholeHandTapTrackingState) -> RecognizedGesture? {
         let touches = frame.activeTouches
-        guard !touches.isEmpty else {
-            let gesture = triggerOnReleaseIfNeeded(frame, state: state)
-            phase = .idle
-            return gesture
+        if touches.count < rule.wholeHandTap.minContactCount {
+            return beginRelease(frame, state: state)
         }
         guard contactCountAllowed(touches.count),
               let centroid = NormalizedPoint.centroid(of: touches),
@@ -52,6 +52,24 @@ final class WholeHandTapGestureRecognizer {
         }
         state.record(touches: touches)
         phase = .tracking(state)
+        return nil
+    }
+
+    private func updateRelease(_ frame: TouchFrame, state: inout WholeHandTapTrackingState) -> RecognizedGesture? {
+        guard !frame.activeTouches.isEmpty else {
+            let gesture = triggerOnReleaseIfNeeded(frame, state: state)
+            phase = .idle
+            return gesture
+        }
+        return beginRelease(frame, state: state)
+    }
+
+    private func beginRelease(_ frame: TouchFrame, state: WholeHandTapTrackingState) -> RecognizedGesture? {
+        if let gesture = triggerOnReleaseIfNeeded(frame, state: state) {
+            phase = frame.activeTouches.isEmpty ? .idle : .cancellingUntilRelease
+            return gesture
+        }
+        phase = frame.activeTouches.isEmpty ? .idle : .releasing(state)
         return nil
     }
 
@@ -105,6 +123,7 @@ final class WholeHandTapGestureRecognizer {
 private enum WholeHandTapPhase {
     case idle
     case tracking(WholeHandTapTrackingState)
+    case releasing(WholeHandTapTrackingState)
     case cancellingUntilRelease
 }
 
