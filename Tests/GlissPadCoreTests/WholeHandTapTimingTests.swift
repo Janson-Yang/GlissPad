@@ -32,6 +32,22 @@ final class WholeHandTapTimingTests: XCTestCase {
         XCTAssertEqual(gestures.map(\.kind), [.wholeHandTap])
     }
 
+    func testTapCountsPressurizedInRangePalmContacts() {
+        let recognizer = recognizer()
+
+        XCTAssertTrue(recognizer.process(frame(touches: touches(count: 8, state: .hoverInRange), time: 1.00)).isEmpty)
+        let gestures = recognizer.process(frame(touches: [], time: 1.18))
+
+        XCTAssertEqual(gestures.map(\.kind), [.wholeHandTap])
+    }
+
+    func testTapIgnoresUnpressurizedInRangeContacts() {
+        let recognizer = recognizer()
+
+        XCTAssertTrue(recognizer.process(frame(touches: touches(count: 8, state: .hoverInRange, pressure: 0), time: 1.00)).isEmpty)
+        XCTAssertTrue(recognizer.process(frame(touches: [], time: 1.18)).isEmpty)
+    }
+
     func testTapAllowsHumanReleaseDuration() {
         let recognizer = recognizer()
 
@@ -97,15 +113,20 @@ final class WholeHandTapTimingTests: XCTestCase {
         TouchFrame(touches: touches, timestamp: time, frameNumber: Int(time * 100))
     }
 
-    private func touches(count: Int, size: Double = 0.08) -> [TouchPoint] {
+    private func touches(
+        count: Int,
+        state: TouchState = .touching,
+        pressure: Double = 0.2,
+        size: Double = 0.08
+    ) -> [TouchPoint] {
         (0..<count).map { index in
             let row = index / 4
             let column = index % 4
             return TouchPoint(
                 id: index + 1,
-                state: .touching,
+                state: state,
                 position: NormalizedPoint(x: 0.38 + Double(column) * 0.08, y: 0.45 + Double(row) * 0.10),
-                pressure: 0.2,
+                pressure: pressure,
                 size: size
             )
         }

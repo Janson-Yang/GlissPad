@@ -230,6 +230,9 @@ extension GestureEditorWindowController {
             rule.startRegion = nil
             rule.endRegion = nil
         }
+        if rule.actions.indices.contains(selectedAction.index) {
+            rule.actions[selectedAction.index] = try visibleAction()
+        }
         selectedSlot.write(rule, to: &configuration)
     }
 

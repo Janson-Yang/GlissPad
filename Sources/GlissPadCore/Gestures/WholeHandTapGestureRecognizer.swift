@@ -32,7 +32,7 @@ final class WholeHandTapGestureRecognizer {
     }
 
     private func startTrackingIfPossible(_ frame: TouchFrame) {
-        let touches = frame.activeTouches
+        let touches = frame.wholeHandContacts
         guard contactCountAllowed(touches.count),
               let centroid = NormalizedPoint.centroid(of: touches),
               regionContains(centroid) else { return }
@@ -40,7 +40,7 @@ final class WholeHandTapGestureRecognizer {
     }
 
     private func updateTracking(_ frame: TouchFrame, state: inout WholeHandTapTrackingState) -> RecognizedGesture? {
-        let touches = frame.activeTouches
+        let touches = frame.wholeHandContacts
         if touches.count < rule.wholeHandTap.minContactCount {
             return beginRelease(frame, state: state)
         }
@@ -156,5 +156,23 @@ private extension Array where Element == TouchPoint {
 
     var averageContactArea: Double {
         isEmpty ? 0 : totalContactArea / Double(count)
+    }
+}
+
+private extension TouchFrame {
+    var wholeHandContacts: [TouchPoint] {
+        touches.filter(\.isWholeHandContact)
+    }
+}
+
+private extension TouchPoint {
+    var isWholeHandContact: Bool {
+        state.isTouchingSurface || (state.isWholeHandCandidateState && pressure > 0.02)
+    }
+}
+
+private extension TouchState {
+    var isWholeHandCandidateState: Bool {
+        self == .startInRange || self == .hoverInRange || self == .lingerInRange
     }
 }

@@ -19,11 +19,7 @@ extension GestureEditorWindowController {
         let scriptTypeRow = FormFactory.row("Script type", scriptTypeControl())
         let scriptLabel = scriptEditorLabel()
         let scriptScrollView = RoundedScriptScrollView()
-        let buttonRow = inspectorButtonRow(FormFactory.dangerButton(
-            "Delete",
-            target: self,
-            action: #selector(deleteSelectedAction)
-        ))
+        let buttonRow = actionParameterButtonRow()
         scriptScrollView.documentView = scriptTextView
         [title, actionListTitleLabel, nameRow, scriptTypeRow, scriptLabel, scriptScrollView, buttonRow].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false

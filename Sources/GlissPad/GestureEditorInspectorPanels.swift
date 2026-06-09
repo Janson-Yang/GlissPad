@@ -90,7 +90,7 @@ extension GestureEditorWindowController {
             FormFactory.row("Second key", secondaryKeyField),
             FormFactory.row("Key hold ms", keyboardHoldMillisecondsField),
             FormFactory.row("After key up ms", keyboardPostReleaseDelayField),
-            inspectorButtonRow(deleteActionButton())
+            actionParameterButtonRow()
         ])
     }
 
@@ -101,7 +101,7 @@ extension GestureEditorWindowController {
             FormFactory.row("Action type", actionTypeLabel),
             FormFactory.row("HUD title", testHUDTitleField),
             FormFactory.row("HUD detail", testHUDDetailField),
-            inspectorButtonRow(deleteActionButton())
+            actionParameterButtonRow()
         ])
     }
 
@@ -112,7 +112,7 @@ extension GestureEditorWindowController {
             FormFactory.row("Action type", actionTypeLabel),
             FormFactory.row("Seconds", latencySecondsField),
             FormFactory.row("Milliseconds", latencyMillisecondsField),
-            inspectorButtonRow(deleteActionButton())
+            actionParameterButtonRow()
         ])
     }
 
@@ -237,7 +237,11 @@ extension GestureEditorWindowController {
         FormFactory.dangerButton("Delete", target: self, action: #selector(deleteSelectedTrigger))
     }
 
-    private func deleteActionButton() -> NSButton {
+    func actionParameterButtonRow() -> NSStackView {
+        inspectorButtonRow(saveParametersButton(), deleteActionButton())
+    }
+
+    func deleteActionButton() -> NSButton {
         FormFactory.dangerButton("Delete", target: self, action: #selector(deleteSelectedAction))
     }
 }

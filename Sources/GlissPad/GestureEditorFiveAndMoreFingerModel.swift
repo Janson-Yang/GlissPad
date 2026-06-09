@@ -19,6 +19,9 @@ extension GestureEditorWindowController {
         rule.cooldownMilliseconds = try intValue(cooldownField, name: "cooldown")
         rule.common = try visibleFiveAndMoreCommon(type: type)
         try writeFiveAndMoreFamilyOptions(type: type, rule: &rule)
+        if rule.actions.indices.contains(selectedAction.index) {
+            rule.actions[selectedAction.index] = try visibleAction()
+        }
         selectedSlot.write(rule, to: &configuration)
     }
 
