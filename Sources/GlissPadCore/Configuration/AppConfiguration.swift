@@ -85,6 +85,9 @@ public struct AppConfiguration: Codable, Equatable, Sendable {
                 rule = migrateThreeFingerTipSwipeVelocity(rule)
             }
             return .threeFinger(id: id, type: type, rule: rule)
+        case .fiveAndMoreFinger(let id, .fiveFingerTap, var rule):
+            rule = migrateFiveFingerTapTiming(rule)
+            return .fiveAndMoreFinger(id: id, type: .fiveFingerTap, rule: rule)
         case .fourFinger, .fiveAndMoreFinger:
             return trigger
         case .oneFinger, .circle, .shape, .tap, .customPath, .touchStart, .tipTap, .swipe,
@@ -163,6 +166,20 @@ public struct AppConfiguration: Codable, Equatable, Sendable {
         guard isLegacyValue(rule.tipSwipe.minimumVelocity, in: [0.75]) else { return rule }
         var rule = rule
         rule.tipSwipe.minimumVelocity = 0.35
+        return rule
+    }
+
+    private func migrateFiveFingerTapTiming(_ rule: FiveAndMoreFingerGestureRule) -> FiveAndMoreFingerGestureRule {
+        var rule = rule
+        if isLegacyValue(Double(rule.tap.maximumTapMilliseconds), in: [200]) {
+            rule.tap.maximumTapMilliseconds = 320
+        }
+        if isLegacyValue(rule.tap.maximumMovement, in: [0.08]) {
+            rule.tap.maximumMovement = 0.10
+        }
+        if isLegacyValue(Double(rule.tap.maximumInterTapIntervalMilliseconds), in: [280]) {
+            rule.tap.maximumInterTapIntervalMilliseconds = 320
+        }
         return rule
     }
 

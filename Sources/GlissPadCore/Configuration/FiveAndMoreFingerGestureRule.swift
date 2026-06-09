@@ -80,7 +80,7 @@ public struct FiveAndMoreFingerGestureRule: Codable, Equatable, Sendable {
     }
 
     public static func defaultTapOptions() -> ThreeFingerTapOptions {
-        ThreeFingerTapOptions(maximumTapMilliseconds: 200, maximumMovement: 0.08, maximumInterTapIntervalMilliseconds: 280)
+        ThreeFingerTapOptions(maximumTapMilliseconds: 320, maximumMovement: 0.10, maximumInterTapIntervalMilliseconds: 320)
     }
 
     public static func defaultSwipeOptions() -> ThreeFingerSwipeOptions {

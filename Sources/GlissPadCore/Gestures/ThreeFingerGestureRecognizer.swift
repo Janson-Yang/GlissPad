@@ -137,6 +137,7 @@ final class ThreeFingerGestureRecognizer {
             || ((type == .threeFingerTouch || type == .fourFingerTouch || type == .fiveFingerTouch)
                 && rule.touch.event == .longTouch)
             || type == .fiveFingerTouch
+            || type == .fiveFingerTap
         return needsRelaxedCollection ? max(commonTimeGap, 0.35) : commonTimeGap
     }
 
@@ -146,7 +147,8 @@ final class ThreeFingerGestureRecognizer {
     }
 
     func acceptsCurrentTouchCount(_ count: Int) -> Bool {
-        count == requiredFingerCount || (type == .fiveFingerTouch && count > requiredFingerCount)
+        count == requiredFingerCount
+            || ((type == .fiveFingerTouch || type == .fiveFingerTap) && count > requiredFingerCount)
     }
 
     private func currentCollection(frame: TouchFrame, active: [TouchPoint]) -> ThreeFingerCollectionState {
@@ -156,7 +158,7 @@ final class ThreeFingerGestureRecognizer {
         } else {
             collection = ThreeFingerCollectionState(frame: frame)
         }
-        collection.record(frame: frame, active: active, requiredFingerCount: requiredFingerCount)
+        collection.record(frame: frame, active: active, acceptsTouchCount: acceptsCurrentTouchCount)
         return collection
     }
 

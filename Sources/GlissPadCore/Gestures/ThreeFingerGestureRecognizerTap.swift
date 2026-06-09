@@ -37,7 +37,8 @@ extension ThreeFingerGestureRecognizer {
     ) -> RecognizedGesture? {
         let active = frame.activeTouches
         if active.count < requiredFingerCount { return finishTapOnRelease(frame, state: state) }
-        guard active.count == requiredFingerCount, !tapShouldCancel(frame: frame, state: state, active: active) else {
+        guard acceptsCurrentTouchCount(active.count),
+              !tapShouldCancel(frame: frame, state: state, active: active) else {
             phase = .cancellingUntilRelease
             return nil
         }
@@ -51,7 +52,8 @@ extension ThreeFingerGestureRecognizer {
         state: ThreeFingerTrackingState
     ) -> RecognizedGesture? {
         phase = .idle
-        guard frame.timestamp - state.startedAt <= TimeInterval(rule.tap.maximumTapMilliseconds) / 1000,
+        guard !tapReleaseCancels(state),
+              frame.timestamp - state.startedAt <= effectiveMaximumTapDuration,
               canTrigger(at: frame.timestamp) else { return nil }
         return recordTap(frame, anchor: state.samples.last ?? state.centroidAnchor ?? NormalizedPoint(x: 0.5, y: 0.5))
     }
@@ -62,7 +64,7 @@ extension ThreeFingerGestureRecognizer {
         active: [TouchPoint]
     ) -> Bool {
         let moved = tapMovedBeyondTolerance(active, state: state)
-        let pressed = rule.tap.requireNoPress && touchPressureCancels(frame)
+        let pressed = rule.tap.requireNoPress && tapPressCancels(frame, state: state)
         return moved || pressed
     }
 
@@ -72,7 +74,7 @@ extension ThreeFingerGestureRecognizer {
     ) -> Bool {
         guard let anchor = state.centroidAnchor,
               let centroid = NormalizedPoint.centroid(of: active) else { return true }
-        return centroid.distance(to: anchor) > rule.tap.maximumMovement
+        return centroid.distance(to: anchor) > effectiveTapMovementTolerance
     }
 
     private func recordTap(_ frame: TouchFrame, anchor: NormalizedPoint) -> RecognizedGesture? {
@@ -96,5 +98,25 @@ extension ThreeFingerGestureRecognizer {
         guard let pendingTap else { return }
         let interval = TimeInterval(rule.tap.maximumInterTapIntervalMilliseconds) / 1000
         if timestamp - pendingTap.timestamp > interval { self.pendingTap = nil }
+    }
+
+    private var effectiveMaximumTapDuration: TimeInterval {
+        let configured = TimeInterval(rule.tap.maximumTapMilliseconds) / 1000
+        return type == .fiveFingerTap ? max(configured, 0.32) : configured
+    }
+
+    private var effectiveTapMovementTolerance: Double {
+        type == .fiveFingerTap ? max(rule.tap.maximumMovement, 0.10) : rule.tap.maximumMovement
+    }
+
+    private func tapPressCancels(_ frame: TouchFrame, state: ThreeFingerTrackingState) -> Bool {
+        if type == .fiveFingerTap {
+            return frame.hasRecentClick || frame.clickGeneration > state.clickBaseline
+        }
+        return touchPressureCancels(frame)
+    }
+
+    private func tapReleaseCancels(_ state: ThreeFingerTrackingState) -> Bool {
+        type == .fiveFingerTap && rule.tap.requireNoPress && state.sawClick
     }
 }
