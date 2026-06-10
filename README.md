@@ -3,17 +3,18 @@
   <h1>GlissPad</h1>
   <p><strong>A macOS trackpad productivity app for custom gestures and automation workflows.</strong></p>
   <p>
-    Build trackpad triggers, chain actions in order, and keep the listener
-    running from the menu bar while the editor window stays out of the way.
+    Build custom trackpad triggers, chain actions in order, and keep the
+    listener running from the menu bar while the editor window stays out of the
+    way.
   </p>
   <p>
-  <a href="#features">Features</a> ·
-  <a href="#triggers">Triggers</a> ·
-  <a href="#actions">Actions</a> ·
-  <a href="#install-from-a-dmg">Install</a> ·
-  <a href="#build-from-source">Build</a> ·
-  <a href="#configuration">Configuration</a> ·
-  <a href="#license">License</a>
+    <a href="#features">Features</a> ·
+    <a href="#triggers">Triggers</a> ·
+    <a href="#actions">Actions</a> ·
+    <a href="#install-from-a-dmg">Install</a> ·
+    <a href="#build-from-source">Build</a> ·
+    <a href="#configuration">Configuration</a> ·
+    <a href="#license">License</a>
   </p>
 </div>
 
@@ -21,17 +22,20 @@
 
 - Native macOS editor for triggers, actions, parameters, workflow testing, and
   drag reordering.
-- One-finger, two-finger, three-finger, and four-finger trigger families with
-  categorized picker menus and custom SVG icons.
+- Trigger families for one-finger, two-finger, three-finger, four-finger, and
+  five-or-more-finger gestures.
+- Whole-hand tap recognition for palm-style trackpad input.
 - Ordered action workflows. Actions run from top to bottom and stop on failure.
 - AppleScript, shell script, keyboard shortcut, test HUD, and latency actions.
 - Keyboard shortcut timing controls for key hold duration and post-release
   delay.
-- Menu bar control, settings window, and optional launch at login.
+- Menu bar control, settings window, optional launch at login, and standard
+  Command-Q app quitting.
 - Trigger enable switches, status indicators, import/export controls, and local
   JSON configuration.
+- Custom SVG icons for trigger categories, trigger types, and action types.
 
-GlissPad is still early. More trigger types, workflow actions, presets, and
+GlissPad is still growing. More trigger types, workflow actions, presets, and
 documentation are still on the way.
 
 ## Triggers
@@ -46,11 +50,13 @@ GlissPad currently supports these trigger groups:
   thumb + two fingers pinch/spread, and drawing recognition.
 - **Four fingers:** touch, tap, press, swipe, TipTap,
   thumb + three fingers pinch/spread, and drawing recognition.
+- **Five and more fingers:** five-finger touch, tap, press, swipe, drawing,
+  thumb + four fingers pinch/spread, and whole-hand tap.
 - **Release:** run a workflow when the last finger is released.
 
 Several trigger types expose advanced parameters such as timing, movement
-tolerance, pressure thresholds, start/end regions, active finger selection, and
-drawing normalization.
+tolerance, pressure thresholds, start/end regions, active finger selection,
+palm/contact detection, drawing recognition, and drawing normalization.
 
 ## Actions
 
@@ -128,13 +134,13 @@ Scripts/package-macos-dmg.sh
 The default output is:
 
 ```text
-dist/GlissPad-v1.2.0.dmg
+dist/GlissPad-v1.3.0.dmg
 ```
 
 Set `GLISSPAD_VERSION` to build a different versioned artifact:
 
 ```sh
-GLISSPAD_VERSION=1.2.1 Scripts/package-macos-dmg.sh
+GLISSPAD_VERSION=1.3.1 Scripts/package-macos-dmg.sh
 ```
 
 Set `GLISSPAD_CODESIGN_IDENTITY` to choose a signing identity. If it is not set,

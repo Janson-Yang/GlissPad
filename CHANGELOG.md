@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.3.0] - 2026-06-10
+
+### Added
+
+- Added the Five and More Finger gesture family:
+  - Five Finger Touch
+  - Five Finger Tap
+  - Five Finger Press
+  - Thumb + Four Fingers Pinch / Spread
+  - Five Finger Swipe
+  - Five Finger Drawing
+  - Whole Hand Tap
+- Added five-and-more-finger parameter panels, picker entries, trigger-list
+  rendering, workflow persistence, and configuration migration support.
+- Added whole-hand tap configuration for contact count, palm detection, timing,
+  movement tolerance, region filtering, and advanced contact-area thresholds.
+- Added custom SVG icons for five-and-more-finger triggers, including clearer
+  thumb + four fingers pinch/spread and whole-hand tap artwork.
+
+### Improved
+
+- Improved the existing four-finger category icon so it uses a clearer
+  four-point layout.
+- Improved action parameter panels so existing action types share the same
+  Save Parameters and Delete controls.
+
+### Fixed
+
+- Fixed action parameter changes reverting after reselecting an action in
+  existing multi-finger trigger editors.
+
 ## [1.2.0] - 2026-06-08
 
 ### Added
